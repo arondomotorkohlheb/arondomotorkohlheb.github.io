@@ -1,6 +1,114 @@
 <!DOCTYPE html>
-<html>
-  <body>
-    <h1>Hello GitHub Pages!</h1>
-  </body>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pendulum Animation</title>
+<style>
+  body { margin:0; overflow:hidden; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.min.js"></script>
+<script>
+  // --- Scene and camera ---
+  const scene = new THREE.Scene()
+  scene.background = new THREE.Color(0xffffff)
+
+  const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 100)
+  camera.position.set(3,3,3)
+  camera.lookAt(0,0,0)
+
+  const renderer = new THREE.WebGLRenderer({antialias:true})
+  renderer.setSize(window.innerWidth, window.innerHeight)
+  document.body.appendChild(renderer.domElement)
+
+  // --- Helper function to create cylinder between two points ---
+  function createCylinder(p1, p2, radius, color){
+    const direction = new THREE.Vector3().subVectors(p2, p1)
+    const length = direction.length()
+    const geometry = new THREE.CylinderGeometry(radius, radius, length, 16)
+    const material = new THREE.MeshBasicMaterial({color})
+    const cylinder = new THREE.Mesh(geometry, material)
+
+    // position
+    const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5)
+    cylinder.position.copy(mid)
+
+    // orientation
+    const axis = new THREE.Vector3(0,1,0)
+    cylinder.quaternion.setFromUnitVectors(axis, direction.clone().normalize())
+
+    return cylinder
+  }
+
+  // --- Parameters ---
+  const L1 = 1
+  const alphaArray = Array.from({length:100}, (_,i)=>0.5*Math.sin(i*0.1))
+  const thetaArray = Array.from({length:100}, (_,i)=>0.5*Math.cos(i*0.1))
+  let frame = 0
+
+  function calculatePs(theta, s, alpha, L0=1){
+    return new THREE.Vector3(
+      L0*Math.cos(theta) + s*Math.sin(alpha)*Math.sin(theta),
+      L0*Math.sin(theta) - s*Math.sin(alpha)*Math.cos(theta),
+      s*Math.cos(alpha)
+    )
+  }
+
+  // --- Initial points ---
+  const origin = new THREE.Vector3(0,0,0)
+  let armEnd = calculatePs(thetaArray[0],0,alphaArray[0])
+  let pendEnd = calculatePs(thetaArray[0], L1, alphaArray[0])
+
+  // --- Arm, Pendulum, Joint ---
+  let arm = createCylinder(origin, armEnd, 0.02, 0x0000ff)
+  let pendulum = createCylinder(armEnd, pendEnd, 0.02, 0xff0000)
+  scene.add(arm)
+  scene.add(pendulum)
+
+  const joint = new THREE.Mesh(
+    new THREE.SphereGeometry(0.03,16,16),
+    new THREE.MeshBasicMaterial({color:0x000000})
+  )
+  joint.position.copy(armEnd)
+  scene.add(joint)
+
+  // --- Animate ---
+  function animate(){
+    requestAnimationFrame(animate)
+
+    const alpha = alphaArray[frame % alphaArray.length]
+    const theta = thetaArray[frame % thetaArray.length]
+
+    armEnd = calculatePs(theta,0,alpha)
+    pendEnd = calculatePs(theta,L1,alpha)
+
+    // Remove old meshes
+    scene.remove(arm)
+    scene.remove(pendulum)
+
+    // Create new arm and pendulum
+    arm = createCylinder(origin, armEnd, 0.02, 0x0000ff)
+    pendulum = createCylinder(armEnd, pendEnd, 0.02, 0xff0000)
+    scene.add(arm)
+    scene.add(pendulum)
+
+    // Update joint
+    joint.position.copy(armEnd)
+
+    frame++
+    renderer.render(scene, camera)
+  }
+
+  animate()
+
+  // --- Resize ---
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight
+    camera.updateProjectionMatrix()
+    renderer.setSize(window.innerWidth, window.innerHeight)
+  })
+</script>
+</body>
 </html>
