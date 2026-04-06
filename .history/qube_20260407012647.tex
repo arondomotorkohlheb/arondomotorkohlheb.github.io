@@ -1,0 +1,51 @@
+
+Equaion of motion:
+
+\begin{equation}
+\left( \begin{matrix}
+        \ddot \theta \\
+        \ddot \alpha
+    \end{matrix} \right) = \bar M^{-1} \left[
+\frac{1}{ L_1^2 m_1}
+    \left( \begin{matrix}
+        \tau_{\theta} \\
+        \tau_{\alpha}
+    \end{matrix} \right)
+    +\frac{g}{2L_1}
+    \left( \begin{matrix}
+        0 \\
+        sin( \alpha)
+    \end{matrix} \right)
+     + \frac{1}{2} \left( \begin{matrix}
+    - 2 \dot \alpha & 0\\
+        \dot \theta & -\dot \alpha
+    \end{matrix} \right)
+    \frac{\partial M}{\partial \alpha}
+     \left( \begin{matrix}
+        \dot \theta \\
+        \dot \alpha
+    \end{matrix} \right) \right]
+\end{equation}
+
+with the torque expressed as:
+
+\begin{equation}
+\frac{1}{ L_1^2 m_1}
+    \left( \begin{matrix}
+        \tau_{\theta} \\
+        \tau_{\alpha}
+    \end{matrix} \right)
+    = \left( \begin{matrix}
+        -\zeta_\theta & 0 \\ 0 & -\zeta_\alpha
+    \end{matrix}\right)
+    \left( \begin{matrix}
+        \dot \theta \\ \dot \alpha
+    \end{matrix}\right)
+    +
+    \left( \begin{matrix}
+    k_5 \\ 0    
+    \end{matrix}\right)
+    V
+\end{equation}
+
+where the expression of the equation are given as

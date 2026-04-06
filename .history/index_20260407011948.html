@@ -159,19 +159,6 @@ body {
     font-size:16px;
     margin-top:10px;
 }
-.model-content {
-    color:#e8e8e8;
-    font-size:17px;
-    line-height:1.5;
-}
-.model-content p {
-    margin:10px 0;
-}
-.model-content .katex-display {
-    margin:14px 0;
-    overflow-x:auto;
-    overflow-y:hidden;
-}
 </style>
 </head>
 
@@ -218,14 +205,6 @@ body {
             allowfullscreen>
         </iframe>
     </div>
-    <div id="videoFallback" class="video-fallback">
-        Embedded playback is blocked in this context. Open the video directly using the link below.
-    </div>
-</section>
-
-<section class="content-section">
-    <h2 class="section-title">Model</h2>
-    <div id="modelContent" class="model-content">Loading model from qube.tex...</div>
 </section>
 
 <section class="content-section">
@@ -254,93 +233,13 @@ const phaseCanvas = document.getElementById("phaseCanvas");
 const phaseCtx = phaseCanvas.getContext("2d");
 const implementationVideo = document.getElementById("implementationVideo");
 const videoFallback = document.getElementById("videoFallback");
-const modelContent = document.getElementById("modelContent");
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 
-if (location.protocol === 'file:' && implementationVideo) {
+if (location.protocol === 'file:') {
     implementationVideo.style.display = 'none';
-    if (videoFallback) {
-        videoFallback.style.display = 'block';
-    }
+    videoFallback.style.display = 'block';
 }
-
-function appendModelText(container, text) {
-    const trimmed = text.trim();
-    if (!trimmed) {
-        return;
-    }
-
-    const p = document.createElement('p');
-    p.textContent = trimmed;
-    container.appendChild(p);
-}
-
-function normalizeEquation(eq) {
-    return eq
-        .replace(/\bsin\s*\(/g, '\\sin(')
-        .replace(/\bcos\s*\(/g, '\\cos(')
-        .replace(/sin\\theta/g, '\\sin(\\theta)');
-}
-
-function renderModelFromTex(tex) {
-    if (!modelContent) {
-        return;
-    }
-
-    modelContent.innerHTML = '';
-
-    const regex = /\\begin\{equation\}([\s\S]*?)\\end\{equation\}/g;
-    let lastIndex = 0;
-    let match = null;
-    let foundEquation = false;
-
-    while ((match = regex.exec(tex)) !== null) {
-        appendModelText(modelContent, tex.slice(lastIndex, match.index));
-
-        const eqBlock = document.createElement('div');
-        const eqText = normalizeEquation(match[1].trim());
-        katex.render(eqText, eqBlock, {
-            displayMode: true,
-            throwOnError: false
-        });
-        modelContent.appendChild(eqBlock);
-
-        lastIndex = regex.lastIndex;
-        foundEquation = true;
-    }
-
-    appendModelText(modelContent, tex.slice(lastIndex));
-
-    if (!foundEquation && tex.trim()) {
-        const fallback = document.createElement('div');
-        katex.render(normalizeEquation(tex.trim()), fallback, {
-            displayMode: true,
-            throwOnError: false
-        });
-        modelContent.innerHTML = '';
-        modelContent.appendChild(fallback);
-    }
-}
-
-async function loadModelTex() {
-    if (!modelContent) {
-        return;
-    }
-
-    try {
-        const response = await fetch('qube.tex', { cache: 'no-store' });
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        const tex = await response.text();
-        renderModelFromTex(tex);
-    } catch (error) {
-        modelContent.textContent = 'Could not load qube.tex in this browser context. Open qube.tex directly from the reports section or run via a local server.';
-    }
-}
-
-loadModelTex();
 
 camera.aspect = renderPanel.clientWidth / renderPanel.clientHeight;
 camera.updateProjectionMatrix();
