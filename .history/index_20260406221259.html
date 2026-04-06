@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>3D Arm with Angles</title>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<!-- KaTeX for LaTeX rendering -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<style>
+body { margin:0; overflow:hidden; background:black; }
+.label {
+    position: absolute;
+    color: white;
+    font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="thetaLabel" class="label"></div>
+<div id="alphaLabel" class="label"></div>
+
+<script>
+// =====================
+// PARAMETERS
+// =====================
+const L0 = 1;
+const L1 = 1;
+const arcRadius = 0.4;
+
+// =====================
+// TEST DATA
+// =====================
+const N = 300;
+const thetaFrames = Array.from({length: N}, (_, i) => 1.2*Math.sin(i*0.02));
+const alphaFrames = Array.from({length: N}, (_, i) => 0.8*Math.cos(i*0.02));
+
+// =====================
+// SCENE
+// =====================
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(2,2,1.5);
+camera.lookAt(0,0,0);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000);
+document.body.appendChild(renderer.domElement);
+
+// =====================
+// HELPERS
+// =====================
+function updateLine(line, p1, p2){
+    const pos = line.geometry.attributes.position.array;
+    pos[0]=p1.x; pos[1]=p1.y; pos[2]=p1.z;
+    pos[3]=p2.x; pos[4]=p2.y; pos[5]=p2.z;
+    line.geometry.attributes.position.needsUpdate = true;
+}
+
+function createLine(color=0x66ccff, dashed=false){
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6),3));
+
+    const mat = dashed
+        ? new THREE.LineDashedMaterial({color, dashSize:0.05, gapSize:0.03})
+        : new THREE.LineBasicMaterial({color});
+
+    const line = new THREE.Line(geom, mat);
+    if(dashed) line.computeLineDistances();
+    return line;
+}
+
+// =====================
+// OBJECTS
+// =====================
+const arm = createLine();
+const pendulum = createLine();
+scene.add(arm);
+scene.add(pendulum);
+
+// vertical reference
+const verticalLine = createLine(0xffffff, true);
+scene.add(verticalLine);
+
+// arcs
+const thetaArc = new THREE.Line(
+    new THREE.BufferGeometry(),
+    new THREE.LineDashedMaterial({color:0xffffff, dashSize:0.05, gapSize:0.03})
+);
+scene.add(thetaArc);
+
+const alphaArc = new THREE.Line(
+    new THREE.BufferGeometry(),
+    new THREE.LineDashedMaterial({color:0xffffff, dashSize:0.05, gapSize:0.03})
+);
+scene.add(alphaArc);
+
+// =====================
+// GEOMETRY
+// =====================
+function computePoints(theta, alpha){
+
+    // arm in XY plane
+    const armEnd = new THREE.Vector3(
+        L0*Math.cos(theta),
+        L0*Math.sin(theta),
+        0
+    );
+
+    // pendulum: rotate from vertical toward arm plane
+    const dir = new THREE.Vector3(
+        Math.sin(alpha)*Math.sin(theta),
+        -Math.sin(alpha)*Math.cos(theta),
+        Math.cos(alpha)
+    );
+
+    const pendulumEnd = armEnd.clone().addScaledVector(dir, L1);
+
+    return {armEnd, pendulumEnd, dir};
+}
+
+// =====================
+// ARC BUILDERS
+// =====================
+function buildThetaArc(theta){
+    const pts = [];
+    for(let i=0;i<60;i++){
+        const t = theta*i/59;
+        pts.push(new THREE.Vector3(
+            arcRadius*Math.cos(t),
+            arcRadius*Math.sin(t),
+            0
+        ));
+    }
+    thetaArc.geometry.setFromPoints(pts);
+    thetaArc.computeLineDistances();
+}
+
+function buildAlphaArc(armEnd, theta, alpha){
+    const pts = [];
+    for(let i=0;i<60;i++){
+        const a = alpha*i/59;
+        pts.push(new THREE.Vector3(
+            armEnd.x + arcRadius*Math.sin(a)*Math.sin(theta),
+            armEnd.y - arcRadius*Math.sin(a)*Math.cos(theta),
+            armEnd.z + arcRadius*Math.cos(a)
+        ));
+    }
+    alphaArc.geometry.setFromPoints(pts);
+    alphaArc.computeLineDistances();
+}
+
+// =====================
+// LABELS
+// =====================
+const thetaDiv = document.getElementById("thetaLabel");
+const alphaDiv = document.getElementById("alphaLabel");
+
+katex.render("\\theta", thetaDiv);
+katex.render("\\alpha", alphaDiv);
+
+function project(vec){
+    const v = vec.clone().project(camera);
+    return {
+        x: (v.x * 0.5 + 0.5) * window.innerWidth,
+        y: (-v.y * 0.5 + 0.5) * window.innerHeight
+    };
+}
+
+// =====================
+// ANIMATION
+// =====================
+let frame = 0;
+
+function animate(){
+    requestAnimationFrame(animate);
+
+    const theta = thetaFrames[frame];
+    const alpha = alphaFrames[frame];
+
+    const origin = new THREE.Vector3(0,0,0);
+    const {armEnd, pendulumEnd} = computePoints(theta, alpha);
+
+    // update rods
+    updateLine(arm, origin, armEnd);
+    updateLine(pendulum, armEnd, pendulumEnd);
+
+    // vertical reference
+    updateLine(verticalLine, armEnd, armEnd.clone().add(new THREE.Vector3(0,0,1)));
+
+    // arcs
+    buildThetaArc(theta);
+    buildAlphaArc(armEnd, theta, alpha);
+
+    // label positions
+    const thetaPos = project(new THREE.Vector3(
+        0.6*Math.cos(theta/2),
+        0.6*Math.sin(theta/2),
+        0
+    ));
+
+    thetaDiv.style.left = thetaPos.x + "px";
+    thetaDiv.style.top = thetaPos.y + "px";
+
+    const alphaPos = project(new THREE.Vector3(
+        armEnd.x + 0.5*Math.sin(alpha/2)*Math.sin(theta),
+        armEnd.y - 0.5*Math.sin(alpha/2)*Math.cos(theta),
+        armEnd.z + 0.5*Math.cos(alpha/2)
+    ));
+
+    alphaDiv.style.left = alphaPos.x + "px";
+    alphaDiv.style.top = alphaPos.y + "px";
+
+    renderer.render(scene, camera);
+
+    frame = (frame+1)%thetaFrames.length;
+}
+
+animate();
+
+// resize
+window.addEventListener("resize", ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>

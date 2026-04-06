@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>3D Arm + Pendulum Animation</title>
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+</head>
+
+<body style="margin:0; background:black;">
+<div id="plot" style="width:100vw; height:100vh;"></div>
+
+<script>
+// PARAMETERS
+const L0 = 1;
+const L1 = 1;
+const arcRadius = 0.5;
+const offsetLength = 0.1;
+const arrowLength = 0.04;
+const arrowLengthAlpha = 0.04;
+const arcSamples = 100;
+
+// REPLACE THESE WITH YOUR DATA
+const thetaFrames = Array.from({length: 200}, (_, i) => 0.8 * Math.sin(i * 0.05));
+const alphaFrames = Array.from({length: 200}, (_, i) => 0.6 * Math.cos(i * 0.05));
+
+// HELPERS
+function norm(v){
+    const n = Math.hypot(...v);
+    return n > 0 ? v.map(x => x/n) : [0,0,1];
+}
+function cross(a,b){
+    return [
+        a[1]*b[2] - a[2]*b[1],
+        a[2]*b[0] - a[0]*b[2],
+        a[0]*b[1] - a[1]*b[0]
+    ];
+}
+
+// GEOMETRY
+function calculatePs(theta, s, alpha){
+    return [
+        L0*Math.cos(theta) + s*Math.sin(alpha)*Math.sin(theta),
+        L0*Math.sin(theta) - s*Math.sin(alpha)*Math.cos(theta),
+        s*Math.cos(alpha)
+    ];
+}
+
+// TRACE GENERATION
+function createTraces(theta, alpha){
+
+    const origin = [0,0,0];
+    const armEnd = calculatePs(theta, 0, alpha);
+    const pendulumEnd = calculatePs(theta, L1, alpha);
+
+    const traces = [];
+
+    // axes
+    traces.push({type:"scatter3d", mode:"lines", x:[0,1],y:[0,0],z:[0,0], line:{color:"white"}, showlegend:false});
+    traces.push({type:"scatter3d", mode:"lines", x:[0,0],y:[0,1],z:[0,0], line:{color:"white"}, showlegend:false});
+    traces.push({type:"scatter3d", mode:"lines", x:[0,0],y:[0,0],z:[0,1], line:{color:"white"}, showlegend:false});
+
+    // arm
+    traces.push({
+        type:"scatter3d", mode:"lines",
+        x:[origin[0],armEnd[0]],
+        y:[origin[1],armEnd[1]],
+        z:[origin[2],armEnd[2]],
+        line:{color:"lightblue", width:4}, showlegend:false
+    });
+
+    // pendulum
+    traces.push({
+        type:"scatter3d", mode:"lines",
+        x:[armEnd[0],pendulumEnd[0]],
+        y:[armEnd[1],pendulumEnd[1]],
+        z:[armEnd[2],pendulumEnd[2]],
+        line:{color:"lightblue", width:4}, showlegend:false
+    });
+
+    // joint
+    traces.push({
+        type:"scatter3d", mode:"markers",
+        x:[armEnd[0]], y:[armEnd[1]], z:[armEnd[2]],
+        marker:{color:"white", size:4}, showlegend:false
+    });
+
+    // length offsets
+    const armDir = [-Math.sin(theta), Math.cos(theta), 0];
+    const originOffset = origin.map((v,i)=>v+offsetLength*armDir[i]);
+    const armEndOffset = armEnd.map((v,i)=>v+offsetLength*armDir[i]);
+
+    traces.push({
+        type:"scatter3d", mode:"lines",
+        x:[originOffset[0],armEndOffset[0]],
+        y:[originOffset[1],armEndOffset[1]],
+        z:[originOffset[2],armEndOffset[2]],
+        line:{color:"white", dash:"dash"}, showlegend:false
+    });
+
+    const pendDir = norm(pendulumEnd.map((v,i)=>v-armEnd[i]));
+    let ortho = norm(cross(armEnd, pendDir));
+
+    const armEndOffsetPend = armEnd.map((v,i)=>v+offsetLength*ortho[i]);
+    const pendEndOffset = pendulumEnd.map((v,i)=>v+offsetLength*ortho[i]);
+
+    traces.push({
+        type:"scatter3d", mode:"lines",
+        x:[armEndOffsetPend[0],pendEndOffset[0]],
+        y:[armEndOffsetPend[1],pendEndOffset[1]],
+        z:[armEndOffsetPend[2],pendEndOffset[2]],
+        line:{color:"white", dash:"dash"}, showlegend:false
+    });
+
+    // theta arc
+    const arcTheta = Array.from({length:arcSamples},(_,i)=>theta*i/(arcSamples-1));
+
+    traces.push({
+        type:"scatter3d", mode:"lines",
+        x:arcTheta.map(t=>arcRadius*Math.cos(t)),
+        y:arcTheta.map(t=>arcRadius*Math.sin(t)),
+        z:arcTheta.map(()=>0),
+        line:{color:"white", dash:"dash"}, showlegend:false
+    });
+
+    // theta arrow
+    let arrowDir = [-Math.sin(theta), Math.cos(theta), 0];
+    if(theta < 0) arrowDir = arrowDir.map(v=>-v);
+
+    const arcEnd = [
+        arcRadius*Math.cos(theta),
+        arcRadius*Math.sin(theta),
+        0
+    ];
+
+    const arrowStart = arcEnd.map((v,i)=>v - arrowLength*arrowDir[i]);
+
+    traces.push({
+        type:"cone",
+        x:[arrowStart[0]], y:[arrowStart[1]], z:[arrowStart[2]],
+        u:[arrowDir[0]], v:[arrowDir[1]], w:[arrowDir[2]],
+        showscale:false, sizemode:"absolute", sizeref:arrowLength,
+        colorscale:[[0,"white"],[1,"white"]]
+    });
+
+    // alpha arc
+    const arcAlpha = Array.from({length:arcSamples},(_,i)=>alpha*i/(arcSamples-1));
+
+    traces.push({
+        type:"scatter3d", mode:"lines",
+        x:arcAlpha.map(a=>armEnd[0] + arcRadius*Math.sin(a)*Math.sin(theta)),
+        y:arcAlpha.map(a=>armEnd[1] - arcRadius*Math.sin(a)*Math.cos(theta)),
+        z:arcAlpha.map(a=>armEnd[2] + arcRadius*Math.cos(a)),
+        line:{color:"white", dash:"dash"}, showlegend:false
+    });
+
+    let d = [
+        Math.sin(theta)*Math.cos(alpha),
+        -Math.cos(theta)*Math.cos(alpha),
+        -Math.sin(alpha)
+    ];
+    d = norm(d);
+    if(alpha < 0) d = d.map(v=>-v);
+
+    const arcAlphaEnd = [
+        armEnd[0] + arcRadius*Math.sin(alpha)*Math.sin(theta),
+        armEnd[1] - arcRadius*Math.sin(alpha)*Math.cos(theta),
+        armEnd[2] + arcRadius*Math.cos(alpha)
+    ];
+
+    const arrowStartAlpha = arcAlphaEnd.map((v,i)=>v - arrowLengthAlpha*d[i]);
+
+    traces.push({
+        type:"cone",
+        x:[arrowStartAlpha[0]], y:[arrowStartAlpha[1]], z:[arrowStartAlpha[2]],
+        u:[d[0]], v:[d[1]], w:[d[2]],
+        showscale:false, sizemode:"absolute", sizeref:arrowLengthAlpha,
+        colorscale:[[0,"white"],[1,"white"]]
+    });
+
+    // reference line
+    const pend0 = calculatePs(theta, L1, 0);
+
+    traces.push({
+        type:"scatter3d", mode:"lines",
+        x:[armEnd[0], pend0[0]],
+        y:[armEnd[1], pend0[1]],
+        z:[armEnd[2], pend0[2]],
+        line:{color:"white", dash:"dash"}, showlegend:false
+    });
+
+    return traces;
+}
+
+// FRAMES
+function createFrames(){
+    return thetaFrames.map((t,i)=>({
+        name:`f${i}`,
+        data:createTraces(t, alphaFrames[i])
+    }));
+}
+
+// LAYOUT
+const layout = {
+    paper_bgcolor:"black",
+    plot_bgcolor:"black",
+    scene:{
+        bgcolor:"black",
+        aspectmode:"cube",
+        xaxis:{visible:false},
+        yaxis:{visible:false},
+        zaxis:{visible:false},
+        camera:{eye:{x:1,y:0.2,z:0.4}}
+    },
+    updatemenus:[{
+        type:"buttons",
+        buttons:[
+            {
+                label:"Play",
+                method:"animate",
+                args:[null,{
+                    frame:{duration:20, redraw:true},
+                    transition:{duration:20},
+                    fromcurrent:true
+                }]
+            },
+            {
+                label:"Pause",
+                method:"animate",
+                args:[[null],{
+                    frame:{duration:0},
+                    transition:{duration:0}
+                }]
+            }
+        ]
+    }]
+};
+
+// RUN
+Plotly.newPlot("plot", createTraces(thetaFrames[0], alphaFrames[0]), layout)
+.then(()=>Plotly.addFrames("plot", createFrames()));
+
+</script>
+</body>
+</html>

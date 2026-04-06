@@ -12,8 +12,7 @@
 <style>
 body {
     margin:0;
-    overflow-x:hidden;
-    overflow-y:auto;
+    overflow:hidden;
     background:black;
     font-style:italic;
 }
@@ -114,60 +113,12 @@ body {
     line-height:1.25;
     color:#d8d8d8;
 }
-.intro-text {
-    color:#ddd;
-    margin:0 16px 14px 16px;
-    font-size:18px;
-}
-.content-section {
-    margin:18px auto 24px auto;
-    max-width:960px;
-    width:calc(100% - 32px);
-    color:#fff;
-}
-.section-title {
-    margin:10px 0;
-    font-size:24px;
-}
-.video-wrap {
-    position:relative;
-    width:100%;
-    max-width:900px;
-    aspect-ratio:16 / 9;
-}
-.video-wrap iframe {
-    width:100%;
-    height:100%;
-    border:0;
-}
-.reports-list {
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-.reports-list a {
-    color:#9fd3ff;
-    text-decoration:none;
-    font-size:18px;
-}
-.reports-list a:hover {
-    text-decoration:underline;
-}
-.video-fallback {
-    display:none;
-    color:#ddd;
-    font-size:16px;
-    margin-top:10px;
-}
 </style>
 </head>
 
 <body>
 
 <h1 class="headline">Inverted Pendulum Identification and Contorl</h1>
-<p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo inverted pendulum setup. On this page you can find a real time simulation, a video showcasing the implementation on the hardware, and the full reports that detail the MPC construction and the implementation.</p>
-<p class="intro-text">Credit: Áron D. Kohlhéb, Kosma Krzyżanowski</p>
-
 <div class="app-layout">
     <div id="renderPanel" class="panel">
         <div id="thetaLabel" class="label"></div>
@@ -181,43 +132,18 @@ body {
 </div>
 <div class="mode-panel">
     <button id="offControlButton" type="button">
-        <span id="offControlTitle" class="btn-title">Turn Control Off</span>
-        <span id="offControlSubtitle" class="btn-subtitle">Disable control</span>
+        <span class="btn-title">Turn off Control</span>
+        <span class="btn-subtitle">Disable feedback and allow free motion.</span>
     </button>
     <button id="disturbButton" type="button">
         <span class="btn-title">Disturbe</span>
-        <span class="btn-subtitle">Add gaussian noise to the velocity of the arms</span>
+        <span class="btn-subtitle">Hold to inject random kicks into alpha dot.</span>
     </button>
     <button id="trackingButton" type="button">
-        <span id="trackingTitle" class="btn-title">Turn Reference Tracking On</span>
-        <span class="btn-subtitle">Tracking of a square wave</span>
+        <span class="btn-title">Square Wave Tracking</span>
+        <span class="btn-subtitle">Track a square reference with control enabled.</span>
     </button>
 </div>
-
-<section class="content-section">
-    <h2 class="section-title">Implementtation</h2>
-    <div class="video-wrap">
-        <iframe
-            id="implementationVideo"
-            src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
-            title="Implementation video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-        </iframe>
-    </div>
-    <div id="videoFallback" class="video-fallback">
-        Embedded playback is blocked in this context. Open the video directly using the link below.
-    </div>
-    <a href="https://www.youtube.com/watch?v=A2EXIjPWqo4" target="_blank" rel="noopener noreferrer">Open video directly on YouTube</a>
-</section>
-
-<section class="content-section">
-    <h2 class="section-title">Reports</h2>
-    <div class="reports-list">
-        <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
-        <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
-    </div>
-</section>
 
 <script>
 // simulation
@@ -235,15 +161,8 @@ const renderPanel = document.getElementById("renderPanel");
 const phasePanel = document.getElementById("phasePanel");
 const phaseCanvas = document.getElementById("phaseCanvas");
 const phaseCtx = phaseCanvas.getContext("2d");
-const implementationVideo = document.getElementById("implementationVideo");
-const videoFallback = document.getElementById("videoFallback");
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
-
-if (location.protocol === 'file:') {
-    implementationVideo.style.display = 'none';
-    videoFallback.style.display = 'block';
-}
 
 camera.aspect = renderPanel.clientWidth / renderPanel.clientHeight;
 camera.updateProjectionMatrix();
@@ -466,10 +385,7 @@ const phaseThetaDiv = document.getElementById("phaseThetaLabel");
 const phaseAlphaDiv = document.getElementById("phaseAlphaLabel");
 const disturbButton = document.getElementById("disturbButton");
 const offControlButton = document.getElementById("offControlButton");
-const offControlTitle = document.getElementById("offControlTitle");
-const offControlSubtitle = document.getElementById("offControlSubtitle");
 const trackingButton = document.getElementById("trackingButton");
-const trackingTitle = document.getElementById("trackingTitle");
 let disturbanceTimer = null;
 const DISTURBANCE_PERIOD_MS = 100;
 const phaseHistory = [];
@@ -492,9 +408,10 @@ function injectDisturbance() {
         console.warn('Simulation not available yet; disturbance skipped.');
         return;
     }
-    
-    qube.x[1] += gaussianRandom(0, 1);
-    qube.x[0] += gaussianRandom(0, 1);
+
+    const kick = gaussianRandom(0, 1);
+    qube.x[1] += kick;
+     qube.x[1] += kick;
 }
 
 function startContinuousDisturbance() {
@@ -528,40 +445,13 @@ disturbButton.addEventListener('pointercancel', stopContinuousDisturbance);
 window.addEventListener('pointerup', stopContinuousDisturbance);
 window.addEventListener('blur', stopContinuousDisturbance);
 
-function updateModeButtons() {
-    if (!qube) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-        trackingTitle.textContent = 'Turn Reference Tracking On';
-        return;
-    }
-
-    if (qube.controlled) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-    } else {
-        offControlTitle.textContent = 'Turn Control On';
-        offControlSubtitle.textContent = 'Enable control';
-    }
-
-    trackingTitle.textContent = qube.tracking === 'square'
-        ? 'Turn Reference Tracking Off'
-        : 'Turn Reference Tracking On';
-}
-
 offControlButton.addEventListener('click', () => {
     if (!qube) {
         return;
     }
 
-    qube.controlled = !qube.controlled;
-    if (qube.controlled) {
-        qube.x = [0, 0, 0, 0];
-        qube.xref = [0, 0, 0, 0];
-    } else {
-        qube.tracking = null;
-    }
-    updateModeButtons();
+    qube.controlled = false;
+    qube.tracking = null;
 });
 
 trackingButton.addEventListener('click', () => {
@@ -569,15 +459,10 @@ trackingButton.addEventListener('click', () => {
         return;
     }
 
-    if (qube.tracking === 'square') {
-        qube.tracking = null;
-    } else {
-        qube.controlled = true;
-        qube.tracking = 'square';
-        qube.x = [0, 0, 0, 0];
-        qube.xref = [0, 0, 0, 0];
-    }
-    updateModeButtons();
+    qube.controlled = true;
+    qube.tracking = 'square';
+    qube.x = [0, 0, 0, 0];
+    qube.xref = [0, 0, 0, 0];
 });
 
 function drawPhasePlot(theta, alpha) {
@@ -757,7 +642,6 @@ function startSimulation() {
     qube.xref = [0, 0, 0, 0];
     qube.controlled = true;
     qube.tracking = null;
-    updateModeButtons();
 
     animate();
 }

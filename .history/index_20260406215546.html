@@ -1,0 +1,59 @@
+<html>
+<head>
+<title>Run my Python files</title>
+<?PHP
+echo shell_exec("python test.py 'parameter1'");
+?>
+</head>
+<body>
+<div id="plot"></div>
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    const thetaFrames = [...];  // your precomputed arrays
+    const alphaFrames = [...];
+
+    const initialData = createTraces(thetaFrames[0], alphaFrames[0]);
+    const frames = createAnimation(thetaFrames, alphaFrames);
+
+    const layout = {
+        paper_bgcolor: "black",
+        plot_bgcolor: "black",
+        scene: {
+            bgcolor: "black",
+            aspectmode: "cube",
+            xaxis: { visible: false },
+            yaxis: { visible: false },
+            zaxis: { visible: false },
+            camera: { eye: { x: 1, y: 0.2, z: 0.4 } }
+        },
+        updatemenus: [{
+            type: "buttons",
+            buttons: [
+                {
+                    label: "Play",
+                    method: "animate",
+                    args: [null, {
+                        frame: { duration: 20, redraw: true },
+                        transition: { duration: 20 },
+                        fromcurrent: true
+                    }]
+                },
+                {
+                    label: "Pause",
+                    method: "animate",
+                    args: [[null], {
+                        frame: { duration: 0 },
+                        transition: { duration: 0 }
+                    }]
+                }
+            ]
+        }]
+    };
+
+    Plotly.newPlot("plot", initialData, layout).then(() => {
+        Plotly.addFrames("plot", frames);
+    });
+</script>
+</body>
+</html>

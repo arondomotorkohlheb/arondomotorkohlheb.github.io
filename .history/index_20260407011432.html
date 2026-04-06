@@ -153,12 +153,6 @@ body {
 .reports-list a:hover {
     text-decoration:underline;
 }
-.video-fallback {
-    display:none;
-    color:#ddd;
-    font-size:16px;
-    margin-top:10px;
-}
 </style>
 </head>
 
@@ -166,7 +160,7 @@ body {
 
 <h1 class="headline">Inverted Pendulum Identification and Contorl</h1>
 <p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo inverted pendulum setup. On this page you can find a real time simulation, a video showcasing the implementation on the hardware, and the full reports that detail the MPC construction and the implementation.</p>
-<p class="intro-text">Credit: Áron D. Kohlhéb, Kosma Krzyżanowski</p>
+<p class="intro-text">Credit: Áron D. Kohlhéb, Kosma Kryzano</p>
 
 <div class="app-layout">
     <div id="renderPanel" class="panel">
@@ -198,17 +192,13 @@ body {
     <h2 class="section-title">Implementtation</h2>
     <div class="video-wrap">
         <iframe
-            id="implementationVideo"
-            src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
+            src="https://www.youtube.com/embed/A2EXIjPWqo4"
             title="Implementation video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen>
         </iframe>
     </div>
-    <div id="videoFallback" class="video-fallback">
-        Embedded playback is blocked in this context. Open the video directly using the link below.
-    </div>
-    <a href="https://www.youtube.com/watch?v=A2EXIjPWqo4" target="_blank" rel="noopener noreferrer">Open video directly on YouTube</a>
 </section>
 
 <section class="content-section">
@@ -235,15 +225,8 @@ const renderPanel = document.getElementById("renderPanel");
 const phasePanel = document.getElementById("phasePanel");
 const phaseCanvas = document.getElementById("phaseCanvas");
 const phaseCtx = phaseCanvas.getContext("2d");
-const implementationVideo = document.getElementById("implementationVideo");
-const videoFallback = document.getElementById("videoFallback");
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
-
-if (location.protocol === 'file:') {
-    implementationVideo.style.display = 'none';
-    videoFallback.style.display = 'block';
-}
 
 camera.aspect = renderPanel.clientWidth / renderPanel.clientHeight;
 camera.updateProjectionMatrix();

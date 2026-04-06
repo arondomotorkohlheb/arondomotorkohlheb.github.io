@@ -10,214 +10,51 @@
 <script src="qube_dynamics.js"></script>
 
 <style>
-body {
-    margin:0;
-    overflow-x:hidden;
-    overflow-y:auto;
-    background:black;
-    font-style:italic;
-}
-.headline {
-    position:relative;
-    color:white;
-    font-size:28px;
-    font-weight:600;
-    margin:16px;
-}
-.app-layout {
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    flex-wrap:nowrap;
-    gap:12px;
-    padding:0 16px;
-    box-sizing:border-box;
-}
-.panel {
-    position:relative;
-    border:none;
-    border-radius:8px;
-    overflow:hidden;
-    background:#000;
-    aspect-ratio:1 / 1;
-    width:clamp(280px, 46vw, 620px);
-    flex:0 0 auto;
-}
-#renderPanel canvas {
-    display:block;
-    width:100%;
-    height:100%;
-}
-#phaseCanvas {
-    width:100%;
-    height:100%;
-    display:block;
-}
-.phase-axis-label {
-    position:absolute;
-    color:#fff;
-    pointer-events:none;
-    font-size:28px;
-}
-.phase-axis-label.theta {
-    left:50%;
-    bottom:10px;
-    transform:translateX(-50%);
-}
-.phase-axis-label.alpha {
-    left:18px;
-    top:50%;
-    transform:translateY(-50%) translateX(-28px) rotate(-90deg);
-    transform-origin:left top;
-}
+body { margin:0; overflow:hidden; background:black; }
 .label {
     position:absolute;
     color:white;
     font-size:18px;
-    pointer-events:none;
 }
-.mode-panel {
-    margin:12px 16px 0 16px;
+.control-panel {
+    position:absolute;
+    top:16px;
+    right:16px;
+    z-index:10;
     display:flex;
-    justify-content:center;
-    gap:14px;
-    align-items:center;
+    flex-direction:column;
+    gap:8px;
+    align-items:flex-end;
 }
-.mode-panel button {
+.control-panel button {
     background:#111;
     color:#fff;
     border:1px solid #777;
     border-radius:6px;
-    width:210px;
-    height:210px;
-    padding:14px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
+    padding:8px 12px;
     cursor:pointer;
-    font-size:24px;
-    font-style:italic;
-    text-align:center;
+    font-size:14px;
 }
-.mode-panel button:hover {
+.control-panel button:hover {
     background:#222;
 }
-.mode-panel .btn-title {
-    display:block;
-    line-height:1.1;
-}
-.mode-panel .btn-subtitle {
-    display:block;
-    font-size:14px;
-    line-height:1.25;
-    color:#d8d8d8;
-}
-.intro-text {
+.control-panel .disturbance-value {
     color:#ddd;
-    margin:0 16px 14px 16px;
-    font-size:18px;
-}
-.content-section {
-    margin:18px auto 24px auto;
-    max-width:960px;
-    width:calc(100% - 32px);
-    color:#fff;
-}
-.section-title {
-    margin:10px 0;
-    font-size:24px;
-}
-.video-wrap {
-    position:relative;
-    width:100%;
-    max-width:900px;
-    aspect-ratio:16 / 9;
-}
-.video-wrap iframe {
-    width:100%;
-    height:100%;
-    border:0;
-}
-.reports-list {
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-.reports-list a {
-    color:#9fd3ff;
-    text-decoration:none;
-    font-size:18px;
-}
-.reports-list a:hover {
-    text-decoration:underline;
-}
-.video-fallback {
-    display:none;
-    color:#ddd;
-    font-size:16px;
-    margin-top:10px;
+    font-size:13px;
 }
 </style>
 </head>
 
 <body>
 
-<h1 class="headline">Inverted Pendulum Identification and Contorl</h1>
-<p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo inverted pendulum setup. On this page you can find a real time simulation, a video showcasing the implementation on the hardware, and the full reports that detail the MPC construction and the implementation.</p>
-<p class="intro-text">Credit: Áron D. Kohlhéb, Kosma Krzyżanowski</p>
-
-<div class="app-layout">
-    <div id="renderPanel" class="panel">
-        <div id="thetaLabel" class="label"></div>
-        <div id="alphaLabel" class="label"></div>
-    </div>
-    <div id="phasePanel" class="panel">
-        <canvas id="phaseCanvas"></canvas>
-        <div id="phaseThetaLabel" class="phase-axis-label theta"></div>
-        <div id="phaseAlphaLabel" class="phase-axis-label alpha"></div>
-    </div>
+<div id="thetaLabel" class="label"></div>
+<div id="alphaLabel" class="label"></div>
+<div class="control-panel">
+    <button id="disturbButton" type="button">Inject Disturbance</button>
+    <button id="freeMotionButton" type="button">Free Motion: OFF</button>
+    <button id="trackingButton" type="button">Tracking: OFF</button>
+    <div id="disturbanceValue" class="disturbance-value">last kick: 0.00 rad/s</div>
 </div>
-<div class="mode-panel">
-    <button id="offControlButton" type="button">
-        <span id="offControlTitle" class="btn-title">Turn Control Off</span>
-        <span id="offControlSubtitle" class="btn-subtitle">Disable control</span>
-    </button>
-    <button id="disturbButton" type="button">
-        <span class="btn-title">Disturbe</span>
-        <span class="btn-subtitle">Add gaussian noise to the velocity of the arms</span>
-    </button>
-    <button id="trackingButton" type="button">
-        <span id="trackingTitle" class="btn-title">Turn Reference Tracking On</span>
-        <span class="btn-subtitle">Tracking of a square wave</span>
-    </button>
-</div>
-
-<section class="content-section">
-    <h2 class="section-title">Implementtation</h2>
-    <div class="video-wrap">
-        <iframe
-            id="implementationVideo"
-            src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
-            title="Implementation video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-        </iframe>
-    </div>
-    <div id="videoFallback" class="video-fallback">
-        Embedded playback is blocked in this context. Open the video directly using the link below.
-    </div>
-    <a href="https://www.youtube.com/watch?v=A2EXIjPWqo4" target="_blank" rel="noopener noreferrer">Open video directly on YouTube</a>
-</section>
-
-<section class="content-section">
-    <h2 class="section-title">Reports</h2>
-    <div class="reports-list">
-        <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
-        <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
-    </div>
-</section>
 
 <script>
 // simulation
@@ -231,25 +68,12 @@ const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHei
 camera.position.set(2,2,1.5);
 camera.lookAt(0,0,0);
 
-const renderPanel = document.getElementById("renderPanel");
-const phasePanel = document.getElementById("phasePanel");
-const phaseCanvas = document.getElementById("phaseCanvas");
-const phaseCtx = phaseCanvas.getContext("2d");
-const implementationVideo = document.getElementById("implementationVideo");
-const videoFallback = document.getElementById("videoFallback");
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 
-if (location.protocol === 'file:') {
-    implementationVideo.style.display = 'none';
-    videoFallback.style.display = 'block';
-}
-
-camera.aspect = renderPanel.clientWidth / renderPanel.clientHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(renderPanel.clientWidth, renderPanel.clientHeight);
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x000000);
-renderPanel.appendChild(renderer.domElement);
+document.body.appendChild(renderer.domElement);
 
 const orbitTarget = new THREE.Vector3(0, 0.3, 0);
 let orbitRadius = 3.8;
@@ -462,23 +286,15 @@ function buildAlphaArc(armEnd, theta, alpha){
 // =====================
 const thetaDiv = document.getElementById("thetaLabel");
 const alphaDiv = document.getElementById("alphaLabel");
-const phaseThetaDiv = document.getElementById("phaseThetaLabel");
-const phaseAlphaDiv = document.getElementById("phaseAlphaLabel");
 const disturbButton = document.getElementById("disturbButton");
-const offControlButton = document.getElementById("offControlButton");
-const offControlTitle = document.getElementById("offControlTitle");
-const offControlSubtitle = document.getElementById("offControlSubtitle");
+const freeMotionButton = document.getElementById("freeMotionButton");
 const trackingButton = document.getElementById("trackingButton");
-const trackingTitle = document.getElementById("trackingTitle");
+const disturbanceValue = document.getElementById("disturbanceValue");
 let disturbanceTimer = null;
 const DISTURBANCE_PERIOD_MS = 100;
-const phaseHistory = [];
-const MAX_PHASE_POINTS = 180;
 
 katex.render("\\theta", thetaDiv);
 katex.render("\\alpha", alphaDiv);
-katex.render("\\theta", phaseThetaDiv);
-katex.render("\\alpha", phaseAlphaDiv);
 
 function gaussianRandom(mean = 0, sigma = 1) {
     const u1 = Math.max(Math.random(), 1e-12);
@@ -492,9 +308,10 @@ function injectDisturbance() {
         console.warn('Simulation not available yet; disturbance skipped.');
         return;
     }
-    
-    qube.x[1] += gaussianRandom(0, 1);
-    qube.x[0] += gaussianRandom(0, 1);
+
+    const kick = gaussianRandom(0, 1);
+    qube.x[1] += kick;
+    disturbanceValue.textContent = `last kick: ${kick.toFixed(2)} rad/s`;
 }
 
 function startContinuousDisturbance() {
@@ -528,40 +345,39 @@ disturbButton.addEventListener('pointercancel', stopContinuousDisturbance);
 window.addEventListener('pointerup', stopContinuousDisturbance);
 window.addEventListener('blur', stopContinuousDisturbance);
 
-function updateModeButtons() {
+function updateFreeMotionButton() {
     if (!qube) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-        trackingTitle.textContent = 'Turn Reference Tracking On';
+        freeMotionButton.textContent = 'Free Motion: OFF';
         return;
     }
 
-    if (qube.controlled) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-    } else {
-        offControlTitle.textContent = 'Turn Control On';
-        offControlSubtitle.textContent = 'Enable control';
-    }
-
-    trackingTitle.textContent = qube.tracking === 'square'
-        ? 'Turn Reference Tracking Off'
-        : 'Turn Reference Tracking On';
+    const freeMotionEnabled = !qube.controlled;
+    freeMotionButton.textContent = freeMotionEnabled ? 'Free Motion: ON' : 'Free Motion: OFF';
 }
 
-offControlButton.addEventListener('click', () => {
+function updateTrackingButton() {
+    if (!qube) {
+        trackingButton.textContent = 'Tracking: OFF';
+        return;
+    }
+
+    const trackingEnabled = qube.tracking === 'square';
+    trackingButton.textContent = trackingEnabled ? 'Tracking: SQUARE' : 'Tracking: OFF';
+}
+
+freeMotionButton.addEventListener('click', () => {
     if (!qube) {
         return;
     }
 
     qube.controlled = !qube.controlled;
     if (qube.controlled) {
-        qube.x = [0, 0, 0, 0];
-        qube.xref = [0, 0, 0, 0];
+        qube.x = [0, 0, 0, 0.1];
     } else {
         qube.tracking = null;
     }
-    updateModeButtons();
+    updateFreeMotionButton();
+    updateTrackingButton();
 });
 
 trackingButton.addEventListener('click', () => {
@@ -569,115 +385,20 @@ trackingButton.addEventListener('click', () => {
         return;
     }
 
-    if (qube.tracking === 'square') {
-        qube.tracking = null;
-    } else {
-        qube.controlled = true;
-        qube.tracking = 'square';
-        qube.x = [0, 0, 0, 0];
-        qube.xref = [0, 0, 0, 0];
-    }
-    updateModeButtons();
+    qube.controlled = true;
+    qube.tracking = 'square';
+    qube.x = [0, 0, 0, 0];
+    qube.xref = [0, 0, 0, 0];
+
+    updateFreeMotionButton();
+    updateTrackingButton();
 });
-
-function drawPhasePlot(theta, alpha) {
-    phaseHistory.push({theta, alpha});
-    if (phaseHistory.length > MAX_PHASE_POINTS) {
-        phaseHistory.shift();
-    }
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = phaseCanvas.clientWidth;
-    const height = phaseCanvas.clientHeight;
-    if (phaseCanvas.width !== Math.floor(width * dpr) || phaseCanvas.height !== Math.floor(height * dpr)) {
-        phaseCanvas.width = Math.floor(width * dpr);
-        phaseCanvas.height = Math.floor(height * dpr);
-    }
-
-    phaseCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    phaseCtx.fillStyle = "#000";
-    phaseCtx.fillRect(0, 0, width, height);
-
-    const pad = {left: 56, right: 22, top: 20, bottom: 62};
-    const xMin = -1;
-    const xMax = 1;
-    const yMin = -1;
-    const yMax = 1;
-
-    const xScale = (width - pad.left - pad.right) / (xMax - xMin);
-    const yScale = (height - pad.top - pad.bottom) / (yMax - yMin);
-    const mapX = (x) => pad.left + (x - xMin) * xScale;
-    const mapY = (y) => height - pad.bottom - (y - yMin) * yScale;
-
-    phaseCtx.strokeStyle = "#666";
-    phaseCtx.lineWidth = 1;
-    phaseCtx.strokeRect(pad.left, pad.top, width - pad.left - pad.right, height - pad.top - pad.bottom);
-
-    const xTicks = [];
-    const yTicks = [];
-    for (let v = -1; v <= 1.0001; v += 0.2) {
-        const rounded = Math.round(v * 10) / 10;
-        xTicks.push(rounded);
-        yTicks.push(rounded);
-    }
-
-    phaseCtx.strokeStyle = "rgba(255,255,255,0.15)";
-    phaseCtx.lineWidth = 1;
-    phaseCtx.beginPath();
-    for (const tx of xTicks) {
-        const x = mapX(tx);
-        phaseCtx.moveTo(x, pad.top);
-        phaseCtx.lineTo(x, height - pad.bottom);
-    }
-    for (const ty of yTicks) {
-        const y = mapY(ty);
-        phaseCtx.moveTo(pad.left, y);
-        phaseCtx.lineTo(width - pad.right, y);
-    }
-    phaseCtx.stroke();
-
-    for (let i = 1; i < phaseHistory.length; i++) {
-        const p0 = phaseHistory[i - 1];
-        const p1 = phaseHistory[i];
-        const x0 = mapX(Math.max(xMin, Math.min(xMax, p0.theta)));
-        const y0 = mapY(Math.max(yMin, Math.min(yMax, p0.alpha)));
-        const x1 = mapX(Math.max(xMin, Math.min(xMax, p1.theta)));
-        const y1 = mapY(Math.max(yMin, Math.min(yMax, p1.alpha)));
-        const age = i / phaseHistory.length;
-        const alphaFade = Math.max(0.06, age * age);
-
-        phaseCtx.strokeStyle = `rgba(102, 204, 255, ${alphaFade.toFixed(3)})`;
-        phaseCtx.lineWidth = 2;
-        phaseCtx.beginPath();
-        phaseCtx.moveTo(x0, y0);
-        phaseCtx.lineTo(x1, y1);
-        phaseCtx.stroke();
-    }
-
-    const currentX = mapX(Math.max(xMin, Math.min(xMax, theta)));
-    const currentY = mapY(Math.max(yMin, Math.min(yMax, alpha)));
-    phaseCtx.fillStyle = "#fff";
-    phaseCtx.beginPath();
-    phaseCtx.arc(currentX, currentY, 5, 0, Math.PI * 2);
-    phaseCtx.fill();
-
-    phaseCtx.fillStyle = "#bbb";
-    phaseCtx.font = "12px Arial";
-    phaseCtx.textAlign = "center";
-    for (const tx of xTicks) {
-        phaseCtx.fillText(tx.toFixed(1), mapX(tx), height - pad.bottom + 20);
-    }
-    phaseCtx.textAlign = "right";
-    for (const ty of yTicks) {
-        phaseCtx.fillText(ty.toFixed(1), pad.left - 8, mapY(ty) + 4);
-    }
-}
 
 function project(v){
     const p = v.clone().project(camera);
     return {
-        x:(p.x*0.5+0.5)*renderPanel.clientWidth,
-        y:(-p.y*0.5+0.5)*renderPanel.clientHeight
+        x:(p.x*0.5+0.5)*window.innerWidth,
+        y:(-p.y*0.5+0.5)*window.innerHeight
     };
 }
 
@@ -736,8 +457,6 @@ function animate(){
     alphaDiv.style.left = aPos.x+"px";
     alphaDiv.style.top = aPos.y+"px";
 
-    drawPhasePlot(theta, alpha);
-
     renderer.render(scene, camera);
 
     //frame = (frame+1)%thetaFrames.length;
@@ -757,7 +476,8 @@ function startSimulation() {
     qube.xref = [0, 0, 0, 0];
     qube.controlled = true;
     qube.tracking = null;
-    updateModeButtons();
+    updateFreeMotionButton();
+    updateTrackingButton();
 
     animate();
 }
@@ -766,9 +486,9 @@ startSimulation();
 
 // resize
 window.addEventListener("resize", ()=>{
-    camera.aspect = renderPanel.clientWidth/renderPanel.clientHeight;
+    camera.aspect = window.innerWidth/window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(renderPanel.clientWidth, renderPanel.clientHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
 </script>
 

@@ -12,8 +12,7 @@
 <style>
 body {
     margin:0;
-    overflow-x:hidden;
-    overflow-y:auto;
+    overflow:hidden;
     background:black;
     font-style:italic;
 }
@@ -57,17 +56,16 @@ body {
     position:absolute;
     color:#fff;
     pointer-events:none;
-    font-size:28px;
 }
 .phase-axis-label.theta {
     left:50%;
-    bottom:10px;
+    bottom:8px;
     transform:translateX(-50%);
 }
 .phase-axis-label.alpha {
-    left:18px;
+    left:12px;
     top:50%;
-    transform:translateY(-50%) translateX(-28px) rotate(-90deg);
+    transform:translateY(-50%) rotate(-90deg);
     transform-origin:left top;
 }
 .label {
@@ -80,7 +78,7 @@ body {
     margin:12px 16px 0 16px;
     display:flex;
     justify-content:center;
-    gap:14px;
+    gap:8px;
     align-items:center;
 }
 .mode-panel button {
@@ -88,76 +86,13 @@ body {
     color:#fff;
     border:1px solid #777;
     border-radius:6px;
-    width:210px;
-    height:210px;
-    padding:14px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
+    padding:16px 24px;
     cursor:pointer;
-    font-size:24px;
+    font-size:20px;
     font-style:italic;
-    text-align:center;
 }
 .mode-panel button:hover {
     background:#222;
-}
-.mode-panel .btn-title {
-    display:block;
-    line-height:1.1;
-}
-.mode-panel .btn-subtitle {
-    display:block;
-    font-size:14px;
-    line-height:1.25;
-    color:#d8d8d8;
-}
-.intro-text {
-    color:#ddd;
-    margin:0 16px 14px 16px;
-    font-size:18px;
-}
-.content-section {
-    margin:18px auto 24px auto;
-    max-width:960px;
-    width:calc(100% - 32px);
-    color:#fff;
-}
-.section-title {
-    margin:10px 0;
-    font-size:24px;
-}
-.video-wrap {
-    position:relative;
-    width:100%;
-    max-width:900px;
-    aspect-ratio:16 / 9;
-}
-.video-wrap iframe {
-    width:100%;
-    height:100%;
-    border:0;
-}
-.reports-list {
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-.reports-list a {
-    color:#9fd3ff;
-    text-decoration:none;
-    font-size:18px;
-}
-.reports-list a:hover {
-    text-decoration:underline;
-}
-.video-fallback {
-    display:none;
-    color:#ddd;
-    font-size:16px;
-    margin-top:10px;
 }
 </style>
 </head>
@@ -165,9 +100,6 @@ body {
 <body>
 
 <h1 class="headline">Inverted Pendulum Identification and Contorl</h1>
-<p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo inverted pendulum setup. On this page you can find a real time simulation, a video showcasing the implementation on the hardware, and the full reports that detail the MPC construction and the implementation.</p>
-<p class="intro-text">Credit: Áron D. Kohlhéb, Kosma Krzyżanowski</p>
-
 <div class="app-layout">
     <div id="renderPanel" class="panel">
         <div id="thetaLabel" class="label"></div>
@@ -180,44 +112,10 @@ body {
     </div>
 </div>
 <div class="mode-panel">
-    <button id="offControlButton" type="button">
-        <span id="offControlTitle" class="btn-title">Turn Control Off</span>
-        <span id="offControlSubtitle" class="btn-subtitle">Disable control</span>
-    </button>
-    <button id="disturbButton" type="button">
-        <span class="btn-title">Disturbe</span>
-        <span class="btn-subtitle">Add gaussian noise to the velocity of the arms</span>
-    </button>
-    <button id="trackingButton" type="button">
-        <span id="trackingTitle" class="btn-title">Turn Reference Tracking On</span>
-        <span class="btn-subtitle">Tracking of a square wave</span>
-    </button>
+    <button id="offControlButton" type="button">Turn off Control</button>
+    <button id="disturbButton" type="button">Disturbe</button>
+    <button id="trackingButton" type="button">Square Wave Tracking</button>
 </div>
-
-<section class="content-section">
-    <h2 class="section-title">Implementtation</h2>
-    <div class="video-wrap">
-        <iframe
-            id="implementationVideo"
-            src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
-            title="Implementation video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-        </iframe>
-    </div>
-    <div id="videoFallback" class="video-fallback">
-        Embedded playback is blocked in this context. Open the video directly using the link below.
-    </div>
-    <a href="https://www.youtube.com/watch?v=A2EXIjPWqo4" target="_blank" rel="noopener noreferrer">Open video directly on YouTube</a>
-</section>
-
-<section class="content-section">
-    <h2 class="section-title">Reports</h2>
-    <div class="reports-list">
-        <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
-        <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
-    </div>
-</section>
 
 <script>
 // simulation
@@ -235,15 +133,8 @@ const renderPanel = document.getElementById("renderPanel");
 const phasePanel = document.getElementById("phasePanel");
 const phaseCanvas = document.getElementById("phaseCanvas");
 const phaseCtx = phaseCanvas.getContext("2d");
-const implementationVideo = document.getElementById("implementationVideo");
-const videoFallback = document.getElementById("videoFallback");
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
-
-if (location.protocol === 'file:') {
-    implementationVideo.style.display = 'none';
-    videoFallback.style.display = 'block';
-}
 
 camera.aspect = renderPanel.clientWidth / renderPanel.clientHeight;
 camera.updateProjectionMatrix();
@@ -466,10 +357,7 @@ const phaseThetaDiv = document.getElementById("phaseThetaLabel");
 const phaseAlphaDiv = document.getElementById("phaseAlphaLabel");
 const disturbButton = document.getElementById("disturbButton");
 const offControlButton = document.getElementById("offControlButton");
-const offControlTitle = document.getElementById("offControlTitle");
-const offControlSubtitle = document.getElementById("offControlSubtitle");
 const trackingButton = document.getElementById("trackingButton");
-const trackingTitle = document.getElementById("trackingTitle");
 let disturbanceTimer = null;
 const DISTURBANCE_PERIOD_MS = 100;
 const phaseHistory = [];
@@ -492,9 +380,9 @@ function injectDisturbance() {
         console.warn('Simulation not available yet; disturbance skipped.');
         return;
     }
-    
-    qube.x[1] += gaussianRandom(0, 1);
-    qube.x[0] += gaussianRandom(0, 1);
+
+    const kick = gaussianRandom(0, 1);
+    qube.x[1] += kick;
 }
 
 function startContinuousDisturbance() {
@@ -528,40 +416,13 @@ disturbButton.addEventListener('pointercancel', stopContinuousDisturbance);
 window.addEventListener('pointerup', stopContinuousDisturbance);
 window.addEventListener('blur', stopContinuousDisturbance);
 
-function updateModeButtons() {
-    if (!qube) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-        trackingTitle.textContent = 'Turn Reference Tracking On';
-        return;
-    }
-
-    if (qube.controlled) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-    } else {
-        offControlTitle.textContent = 'Turn Control On';
-        offControlSubtitle.textContent = 'Enable control';
-    }
-
-    trackingTitle.textContent = qube.tracking === 'square'
-        ? 'Turn Reference Tracking Off'
-        : 'Turn Reference Tracking On';
-}
-
 offControlButton.addEventListener('click', () => {
     if (!qube) {
         return;
     }
 
-    qube.controlled = !qube.controlled;
-    if (qube.controlled) {
-        qube.x = [0, 0, 0, 0];
-        qube.xref = [0, 0, 0, 0];
-    } else {
-        qube.tracking = null;
-    }
-    updateModeButtons();
+    qube.controlled = false;
+    qube.tracking = null;
 });
 
 trackingButton.addEventListener('click', () => {
@@ -569,15 +430,10 @@ trackingButton.addEventListener('click', () => {
         return;
     }
 
-    if (qube.tracking === 'square') {
-        qube.tracking = null;
-    } else {
-        qube.controlled = true;
-        qube.tracking = 'square';
-        qube.x = [0, 0, 0, 0];
-        qube.xref = [0, 0, 0, 0];
-    }
-    updateModeButtons();
+    qube.controlled = true;
+    qube.tracking = 'square';
+    qube.x = [0, 0, 0, 0];
+    qube.xref = [0, 0, 0, 0];
 });
 
 function drawPhasePlot(theta, alpha) {
@@ -598,42 +454,45 @@ function drawPhasePlot(theta, alpha) {
     phaseCtx.fillStyle = "#000";
     phaseCtx.fillRect(0, 0, width, height);
 
-    const pad = {left: 56, right: 22, top: 20, bottom: 62};
-    const xMin = -1;
-    const xMax = 1;
-    const yMin = -1;
-    const yMax = 1;
+    const pad = 36;
+    const xMin = -0.8;
+    const xMax = 0.8;
+    const yMin = -1.4;
+    const yMax = 1.4;
 
-    const xScale = (width - pad.left - pad.right) / (xMax - xMin);
-    const yScale = (height - pad.top - pad.bottom) / (yMax - yMin);
-    const mapX = (x) => pad.left + (x - xMin) * xScale;
-    const mapY = (y) => height - pad.bottom - (y - yMin) * yScale;
+    const xScale = (width - 2 * pad) / (xMax - xMin);
+    const yScale = (height - 2 * pad) / (yMax - yMin);
+    const mapX = (x) => pad + (x - xMin) * xScale;
+    const mapY = (y) => height - pad - (y - yMin) * yScale;
 
     phaseCtx.strokeStyle = "#666";
     phaseCtx.lineWidth = 1;
-    phaseCtx.strokeRect(pad.left, pad.top, width - pad.left - pad.right, height - pad.top - pad.bottom);
+    phaseCtx.strokeRect(pad, pad, width - 2 * pad, height - 2 * pad);
 
-    const xTicks = [];
-    const yTicks = [];
-    for (let v = -1; v <= 1.0001; v += 0.2) {
-        const rounded = Math.round(v * 10) / 10;
-        xTicks.push(rounded);
-        yTicks.push(rounded);
-    }
+    const xTicks = [-0.8, -0.4, 0, 0.4, 0.8];
+    const yTicks = [-1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2];
 
     phaseCtx.strokeStyle = "rgba(255,255,255,0.15)";
     phaseCtx.lineWidth = 1;
     phaseCtx.beginPath();
     for (const tx of xTicks) {
         const x = mapX(tx);
-        phaseCtx.moveTo(x, pad.top);
-        phaseCtx.lineTo(x, height - pad.bottom);
+        phaseCtx.moveTo(x, pad);
+        phaseCtx.lineTo(x, height - pad);
     }
     for (const ty of yTicks) {
         const y = mapY(ty);
-        phaseCtx.moveTo(pad.left, y);
-        phaseCtx.lineTo(width - pad.right, y);
+        phaseCtx.moveTo(pad, y);
+        phaseCtx.lineTo(width - pad, y);
     }
+    phaseCtx.stroke();
+
+    phaseCtx.strokeStyle = "#888";
+    phaseCtx.beginPath();
+    phaseCtx.moveTo(mapX(0), pad);
+    phaseCtx.lineTo(mapX(0), height - pad);
+    phaseCtx.moveTo(pad, mapY(0));
+    phaseCtx.lineTo(width - pad, mapY(0));
     phaseCtx.stroke();
 
     for (let i = 1; i < phaseHistory.length; i++) {
@@ -665,11 +524,11 @@ function drawPhasePlot(theta, alpha) {
     phaseCtx.font = "12px Arial";
     phaseCtx.textAlign = "center";
     for (const tx of xTicks) {
-        phaseCtx.fillText(tx.toFixed(1), mapX(tx), height - pad.bottom + 20);
+        phaseCtx.fillText(tx.toFixed(1), mapX(tx), height - 14);
     }
     phaseCtx.textAlign = "right";
     for (const ty of yTicks) {
-        phaseCtx.fillText(ty.toFixed(1), pad.left - 8, mapY(ty) + 4);
+        phaseCtx.fillText(ty.toFixed(1), pad - 6, mapY(ty) + 4);
     }
 }
 
@@ -757,7 +616,6 @@ function startSimulation() {
     qube.xref = [0, 0, 0, 0];
     qube.controlled = true;
     qube.tracking = null;
-    updateModeButtons();
 
     animate();
 }

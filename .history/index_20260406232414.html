@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Qube Simulation</title>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+body { margin:0; overflow:hidden; background:black; }
+.label { position:absolute; color:white; font-size:18px; }
+</style>
+</head>
+<body>
+<div id="thetaLabel" class="label"></div>
+<div id="alphaLabel" class="label"></div>
+
+<script>
+// =====================
+// PARAMETERS
+// =====================
+const params = {
+    L0: 1,
+    L1: 1,
+    gravity: 9.81,
+    zeta_theta: 0.1,
+    zeta_alpha: 0.1,
+    v2tau: 1.0,
+    k0: 0.01
+};
+
+const dt = 0.02;  // simulation timestep
+const K = [[20, 0, 10, 0]];  // HARD-CODED control gain
+
+// =====================
+// STATE
+// x = [theta_dot, alpha_dot, theta, alpha]
+let x = [0, 0, 0, 0.1];
+const xref = [0, 0, 0, 0];
+
+// =====================
+// THREE.JS SETUP
+// =====================
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(2,2,1.5);
+camera.lookAt(0,0,0);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x000000);
+document.body.appendChild(renderer.domElement);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+function createLine(color, dashed=false){
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(6);
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const material = dashed
+        ? new THREE.LineDashedMaterial({color, dashSize:0.05, gapSize:0.03})
+        : new THREE.LineBasicMaterial({color});
+    const line = new THREE.Line(geometry, material);
+    if(dashed){ geometry.computeBoundingSphere(); line.computeLineDistances(); }
+    return line;
+}
+function updateLine(line, a, b){
+    const p = line.geometry.attributes.position.array;
+    p[0]=a.x; p[1]=a.y; p[2]=a.z;
+    p[3]=b.x; p[4]=b.y; p[5]=b.z;
+    line.geometry.attributes.position.needsUpdate = true;
+    if(line.material instanceof THREE.LineDashedMaterial) line.computeLineDistances();
+}
+
+// =====================
+// OBJECTS
+// =====================
+const arm = createLine(0x66ccff);
+const pendulum = createLine(0x66ccff);
+scene.add(arm, pendulum);
+
+const thetaDiv = document.getElementById("thetaLabel");
+const alphaDiv = document.getElementById("alphaLabel");
+
+// =====================
+// DYNAMICS FUNCTIONS
+// =====================
+function computePositions(x){
+    const theta = x[2];
+    const alpha = x[3];
+
+    const armEnd = new THREE.Vector3(
+        params.L0*Math.cos(theta),
+        params.L0*Math.sin(theta),
+        0
+    );
+    const dir = new THREE.Vector3(
+        Math.sin(alpha)*Math.sin(theta),
+        -Math.sin(alpha)*Math.cos(theta),
+        Math.cos(alpha)
+    );
+    const pendulumEnd = armEnd.clone().addScaledVector(dir, params.L1);
+    return {armEnd, pendulumEnd};
+}
+
+function controlInput(x){
+    const dx = xref.map((v,i)=>v - x[i]);
+    let u = 0;
+    for(let i=0;i<4;i++) u += K[0][i]*dx[i];
+    return u;
+}
+
+function computeAcceleration(x, u){
+    const theta = x[2];
+    const alpha = x[3];
+    const theta_dot = x[0];
+    const alpha_dot = x[1];
+
+    const C0 = [-Math.sin(theta), Math.cos(theta), 0];
+    const C1 = [Math.sin(alpha)*Math.cos(theta), Math.sin(alpha)*Math.sin(theta), 0];
+    const C2 = [Math.cos(alpha)*Math.sin(theta), -Math.cos(alpha)*Math.cos(theta), -Math.sin(alpha)];
+
+    const r = params.L0/params.L1;
+    const M11 = r*r*(C0[0]**2 + C0[1]**2 + C0[2]**2) + r*(C0[0]*C1[0]+C0[1]*C1[1]+C0[2]*C1[2]) + (1/3)*(C1[0]**2+C1[1]**2+C1[2]**2);
+    const M12 = 0.5*r*(C0[0]*C2[0]+C0[1]*C2[1]+C0[2]*C2[2]) + (1/3)*(C1[0]*C2[0]+C1[1]*C2[1]+C1[2]*C2[2]);
+    const M22 = (1/3)*(C2[0]**2+C2[1]**2+C2[2]**2);
+
+    const det = M22*(M11+params.k0) - M12*M12;
+    const Mbar_inv = [
+        [M22/det, -M12/det],
+        [-M12/det, (M11+params.k0)/det]
+    ];
+
+    const tau = [params.v2tau*u - params.zeta_theta*theta_dot, -params.zeta_alpha*alpha_dot];
+    const gravity = [0, params.gravity*Math.sin(alpha)];
+
+    // simple Malpha term approximation
+    const Malpha = [0,0];
+
+    const acc0 = Mbar_inv[0][0]*(tau[0]+gravity[0]+Malpha[0]) + Mbar_inv[0][1]*(tau[1]+gravity[1]+Malpha[1]);
+    const acc1 = Mbar_inv[1][0]*(tau[0]+gravity[0]+Malpha[0]) + Mbar_inv[1][1]*(tau[1]+gravity[1]+Malpha[1]);
+
+    return [acc0, acc1];
+}
+
+function integrateState(x, dt){
+    const u = controlInput(x);
+    const acc = computeAcceleration(x, u);
+    return [
+        x[0]+acc[0]*dt,
+        x[1]+acc[1]*dt,
+        x[2]+x[0]*dt,
+        x[3]+x[1]*dt
+    ];
+}
+
+// =====================
+// PROJECT TO SCREEN
+// =====================
+function project(v){
+    const p = v.clone().project(camera);
+    return {x:(p.x*0.5+0.5)*window.innerWidth, y:(-p.y*0.5+0.5)*window.innerHeight};
+}
+
+// =====================
+// ANIMATION
+// =====================
+function animate(){
+    requestAnimationFrame(animate);
+
+    x = integrateState(x, dt);
+
+    const {armEnd, pendulumEnd} = computePositions(x);
+    updateLine(arm, new THREE.Vector3(0,0,0), armEnd);
+    updateLine(pendulum, armEnd, pendulumEnd);
+
+    const tPos = project(new THREE.Vector3(0.6*Math.cos(x[2]/2), 0.6*Math.sin(x[2]/2),0));
+    thetaDiv.style.left = tPos.x+"px"; thetaDiv.style.top = tPos.y+"px";
+
+    const aPos = project(new THREE.Vector3(
+        armEnd.x+0.5*Math.sin(x[3]/2)*Math.sin(x[2]),
+        armEnd.y-0.5*Math.sin(x[3]/2)*Math.cos(x[2]),
+        armEnd.z+0.5*Math.cos(x[3]/2)
+    ));
+    alphaDiv.style.left = aPos.x+"px"; alphaDiv.style.top = aPos.y+"px";
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+animate();
+
+// =====================
+// RESIZE
+// =====================
+window.addEventListener("resize", ()=>{
+    camera.aspect = window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
