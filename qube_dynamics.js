@@ -96,6 +96,12 @@ class Qube {
     step() {
         this.referenceTracking();
 
+        // Safeguard: disable controller if |alpha| exceeds threshold
+        const alphaThreshold = 40/180*Math.PI;
+        if (Math.abs(this.x[3]) > alphaThreshold) {
+            this.controlled = false;
+        }
+
         const u = this.controlled ? this.controlInput() : 0;
         const [acc_theta, acc_alpha] = this.computeAcceleration(u);
 

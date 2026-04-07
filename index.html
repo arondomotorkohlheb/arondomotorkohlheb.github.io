@@ -1,873 +1,200 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Arm + Pendulum (Stable)</title>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script src="qube_dynamics.js"></script>
-
-<style>
-body {
-    margin:0;
-    overflow-x:hidden;
-    overflow-y:auto;
-    background:black;
-    font-style:italic;
-}
-.headline {
-    position:relative;
-    color:white;
-    font-size:28px;
-    font-weight:600;
-    margin:16px;
-}
-.app-layout {
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    flex-wrap:nowrap;
-    gap:12px;
-    padding:0 16px;
-    box-sizing:border-box;
-}
-.panel {
-    position:relative;
-    border:none;
-    border-radius:8px;
-    overflow:hidden;
-    background:#000;
-    aspect-ratio:1 / 1;
-    width:clamp(280px, 46vw, 620px);
-    flex:0 0 auto;
-}
-#renderPanel canvas {
-    display:block;
-    width:100%;
-    height:100%;
-}
-#phaseCanvas {
-    width:100%;
-    height:100%;
-    display:block;
-}
-.phase-axis-label {
-    position:absolute;
-    color:#fff;
-    pointer-events:none;
-    font-size:28px;
-}
-.phase-axis-label.theta {
-    left:50%;
-    bottom:2px;
-    transform:translateX(-50%);
-}
-.phase-axis-label.alpha {
-    left:18px;
-    top:50%;
-    transform:translateY(-50%) translateX(-28px) rotate(-90deg);
-    transform-origin:left top;
-}
-.label {
-    position:absolute;
-    color:white;
-    font-size:18px;
-    pointer-events:none;
-}
-.mode-panel {
-    margin:12px 16px 0 16px;
-    display:flex;
-    justify-content:center;
-    gap:14px;
-    align-items:center;
-}
-.mode-panel button {
-    background:#111;
-    color:#fff;
-    border:1px solid #777;
-    border-radius:6px;
-    width:210px;
-    height:210px;
-    padding:14px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    gap:10px;
-    cursor:pointer;
-    font-size:24px;
-    font-style:italic;
-    text-align:center;
-}
-.mode-panel button:hover {
-    background:#222;
-}
-.mode-panel .btn-title {
-    display:block;
-    line-height:1.1;
-}
-.mode-panel .btn-subtitle {
-    display:block;
-    font-size:14px;
-    line-height:1.25;
-    color:#d8d8d8;
-}
-.intro-text {
-    color:#ddd;
-    margin:0 16px 14px 16px;
-    font-size:18px;
-}
-.content-section {
-    margin:18px auto 24px auto;
-    max-width:960px;
-    width:calc(100% - 32px);
-    color:#fff;
-}
-.section-title {
-    margin:10px 0;
-    font-size:24px;
-}
-.video-wrap {
-    position:relative;
-    width:100%;
-    max-width:900px;
-    aspect-ratio:16 / 9;
-}
-.video-wrap iframe {
-    width:100%;
-    height:100%;
-    border:0;
-}
-.reports-list {
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-}
-.reports-list a {
-    color:#9fd3ff;
-    text-decoration:none;
-    font-size:18px;
-}
-.reports-list a:hover {
-    text-decoration:underline;
-}
-.video-fallback {
-    display:none;
-    color:#ddd;
-    font-size:16px;
-    margin-top:10px;
-}
-.model-content {
-    color:#e8e8e8;
-    font-size:17px;
-    line-height:1.5;
-}
-.model-content p {
-    margin:10px 0;
-}
-.model-content .katex-display {
-    margin:14px 0;
-    overflow-x:auto;
-    overflow-y:hidden;
-}
-</style>
-</head>
-
-<body>
-
-<h1 class="headline">Inverted Pendulum Identification and Contorl</h1>
-<p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo inverted pendulum setup. On this page you can find an interactive real time simulation, a video showcasing physical implementation, the mathematical model, and the full reports that detail the MPC construction and the implementation.</p>
-<p class="intro-text">Credit: Áron D. Kohlhéb, Kosma Krzyżanowski</p>
-
-<div class="app-layout">
-    <div id="renderPanel" class="panel">
-        <div id="thetaLabel" class="label"></div>
-        <div id="alphaLabel" class="label"></div>
-    </div>
-    <div id="phasePanel" class="panel">
-        <canvas id="phaseCanvas"></canvas>
-        <div id="phaseThetaLabel" class="phase-axis-label theta"></div>
-        <div id="phaseAlphaLabel" class="phase-axis-label alpha"></div>
-    </div>
-</div>
-<div class="mode-panel">
-    <button id="offControlButton" type="button">
-        <span id="offControlTitle" class="btn-title">Turn Control Off</span>
-        <span id="offControlSubtitle" class="btn-subtitle">Disable control</span>
-    </button>
-    <button id="disturbButton" type="button">
-        <span class="btn-title">Disturb</span>
-        <span class="btn-subtitle">Add gaussian noise to the velocity of the arms</span>
-    </button>
-    <button id="trackingButton" type="button">
-        <span id="trackingTitle" class="btn-title">Turn Reference Tracking On</span>
-        <span class="btn-subtitle">Tracking of a square wave</span>
-    </button>
-</div>
-
-<section class="content-section">
-    <h2 class="section-title">Implementtation</h2>
-    <div class="video-wrap">
-        <iframe
-            id="implementationVideo"
-            src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
-            title="Implementation video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-        </iframe>
-    </div>
-    <div id="videoFallback" class="video-fallback">
-        Embedded playback is blocked in this context. Open the video directly using the link below.
-    </div>
-</section>
-
-<section class="content-section">
-    <h2 class="section-title">Model</h2>
-    <div id="modelContent" class="model-content">Loading model from qube.tex...</div>
-</section>
-
-<section class="content-section">
-    <h2 class="section-title">Reports</h2>
-    <div class="reports-list">
-        <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
-        <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
-    </div>
-</section>
-
-<script>
-// simulation
-// =====================
-// BASIC SETUP
-// =====================
-const scene = new THREE.Scene();
-
-
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 100);
-camera.position.set(2,2,1.5);
-camera.lookAt(0,0,0);
-
-const renderPanel = document.getElementById("renderPanel");
-const phasePanel = document.getElementById("phasePanel");
-const phaseCanvas = document.getElementById("phaseCanvas");
-const phaseCtx = phaseCanvas.getContext("2d");
-const implementationVideo = document.getElementById("implementationVideo");
-const videoFallback = document.getElementById("videoFallback");
-const modelContent = document.getElementById("modelContent");
-
-const renderer = new THREE.WebGLRenderer({antialias:true});
-
-if (location.protocol === 'file:' && implementationVideo) {
-    implementationVideo.style.display = 'none';
-    if (videoFallback) {
-        videoFallback.style.display = 'block';
-    }
-}
-
-function appendModelText(container, text) {
-    const trimmed = text.trim();
-    if (!trimmed) {
-        return;
-    }
-
-    const p = document.createElement('p');
-    p.textContent = trimmed;
-    container.appendChild(p);
-}
-
-function normalizeEquation(eq) {
-    return eq
-        .replace(/\bsin\s*\(/g, '\\sin(')
-        .replace(/\bcos\s*\(/g, '\\cos(')
-        .replace(/sin\\theta/g, '\\sin(\\theta)');
-}
-
-function renderModelFromTex(tex) {
-    if (!modelContent) {
-        return;
-    }
-
-    modelContent.innerHTML = '';
-
-    const regex = /\\begin\{equation\}([\s\S]*?)\\end\{equation\}/g;
-    let lastIndex = 0;
-    let match = null;
-    let foundEquation = false;
-
-    while ((match = regex.exec(tex)) !== null) {
-        appendModelText(modelContent, tex.slice(lastIndex, match.index));
-
-        const eqBlock = document.createElement('div');
-        const eqText = normalizeEquation(match[1].trim());
-        katex.render(eqText, eqBlock, {
-            displayMode: true,
-            throwOnError: false
-        });
-        modelContent.appendChild(eqBlock);
-
-        lastIndex = regex.lastIndex;
-        foundEquation = true;
-    }
-
-    appendModelText(modelContent, tex.slice(lastIndex));
-
-    if (!foundEquation && tex.trim()) {
-        const fallback = document.createElement('div');
-        katex.render(normalizeEquation(tex.trim()), fallback, {
-            displayMode: true,
-            throwOnError: false
-        });
-        modelContent.innerHTML = '';
-        modelContent.appendChild(fallback);
-    }
-}
-
-async function loadModelTex() {
-    if (!modelContent) {
-        return;
-    }
-
-    try {
-        const response = await fetch('qube.tex', { cache: 'no-store' });
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - Áron Dömötör Kohlhéb</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        const tex = await response.text();
-        renderModelFromTex(tex);
-    } catch (error) {
-        modelContent.textContent = 'Could not load qube.tex in this browser context. Open qube.tex directly from the reports section or run via a local server.';
-    }
-}
 
-loadModelTex();
-
-camera.aspect = renderPanel.clientWidth / renderPanel.clientHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(renderPanel.clientWidth, renderPanel.clientHeight);
-renderer.setClearColor(0x000000);
-renderPanel.appendChild(renderer.domElement);
-
-const orbitTarget = new THREE.Vector3(0, 0.3, 0);
-let orbitRadius = 3.8;
-let orbitAzimuth = Math.atan2(camera.position.x - orbitTarget.x, camera.position.z - orbitTarget.z);
-let orbitPolar = Math.acos((camera.position.y - orbitTarget.y) / orbitRadius);
-let isOrbitDragging = false;
-let lastPointerX = 0;
-let lastPointerY = 0;
-
-function updateOrbitCamera() {
-    orbitPolar = Math.max(0.08, Math.min(Math.PI - 0.08, orbitPolar));
-    orbitRadius = Math.max(1.5, Math.min(12, orbitRadius));
-
-    const sinPolar = Math.sin(orbitPolar);
-    camera.position.set(
-        orbitTarget.x + orbitRadius * sinPolar * Math.sin(orbitAzimuth),
-        orbitTarget.y + orbitRadius * Math.cos(orbitPolar),
-        orbitTarget.z + orbitRadius * sinPolar * Math.cos(orbitAzimuth)
-    );
-    camera.lookAt(orbitTarget);
-}
-
-renderer.domElement.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0) {
-        return;
-    }
-    isOrbitDragging = true;
-    lastPointerX = event.clientX;
-    lastPointerY = event.clientY;
-    renderer.domElement.setPointerCapture(event.pointerId);
-});
-
-renderer.domElement.addEventListener('pointermove', (event) => {
-    if (!isOrbitDragging) {
-        return;
-    }
-
-    const dx = event.clientX - lastPointerX;
-    const dy = event.clientY - lastPointerY;
-    lastPointerX = event.clientX;
-    lastPointerY = event.clientY;
-
-    orbitAzimuth -= dx * 0.005;
-    orbitPolar -= dy * 0.005;
-    updateOrbitCamera();
-});
-
-function stopOrbitDrag(event) {
-    if (!isOrbitDragging) {
-        return;
-    }
-    isOrbitDragging = false;
-    if (event && typeof event.pointerId === 'number') {
-        renderer.domElement.releasePointerCapture(event.pointerId);
-    }
-}
-
-renderer.domElement.addEventListener('pointerup', stopOrbitDrag);
-renderer.domElement.addEventListener('pointercancel', stopOrbitDrag);
-
-renderer.domElement.addEventListener('wheel', (event) => {
-    event.preventDefault();
-    const zoomFactor = 1 + event.deltaY * 0.0015;
-    orbitRadius *= zoomFactor;
-    updateOrbitCamera();
-}, { passive: false });
-
-updateOrbitCamera();
-
-
-// =====================
-// PARAMETERS
-// =====================
-const L0 = 1;
-const L1 = 1;
-const arcRadius = 0.4;
-const origin = new THREE.Vector3(0,0,0);
-
-// =====================
-// DATA
-// =====================
-// const N = 300;
-// const thetaFrames = Array.from({length:N}, (_,i)=>1.0*Math.sin(i*0.02));
-// const alphaFrames = Array.from({length:N}, (_,i)=>0.8*Math.cos(i*0.02));
-
-// =====================
-// SAFE LINE CREATION
-// =====================
-function createLine(color, dashed=false){
-    const geometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(6);
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-    const material = dashed
-        ? new THREE.LineDashedMaterial({color, dashSize:0.05, gapSize:0.03})
-        : new THREE.LineBasicMaterial({color});
-
-    const line = new THREE.Line(geometry, material);
-
-    if(dashed){
-        geometry.computeBoundingSphere();
-        line.computeLineDistances();
-    }
-
-    return line;
-}
-
-function updateLine(line, a, b){
-    const p = line.geometry.attributes.position.array;
-
-    p[0]=a.x; p[1]=a.y; p[2]=a.z;
-    p[3]=b.x; p[4]=b.y; p[5]=b.z;
-
-    line.geometry.attributes.position.needsUpdate = true;
-
-    if(line.material instanceof THREE.LineDashedMaterial){
-        line.computeLineDistances();
-    }
-}
-
-// =====================
-// OBJECTS
-// =====================
-const arm = createLine(0x66ccff);
-const pendulum = createLine(0x66ccff);
-const vertical = createLine(0xffffff, true);
-const horizontal = createLine(0xffffff, true);
-const xAxis = createLine(0xffffff);
-const yAxis = createLine(0xffffff);
-const zAxis = createLine(0xffffff);
-
-updateLine(horizontal, new THREE.Vector3(0,0,0), new THREE.Vector3(1,0,0));
-updateLine(xAxis, origin, new THREE.Vector3(1, 0, 0));
-updateLine(yAxis, origin, new THREE.Vector3(0, 1, 0));
-updateLine(zAxis, origin, new THREE.Vector3(0, 0, -1));
-
-scene.add(arm, pendulum, vertical, horizontal, xAxis, yAxis, zAxis);
-
-// Example: place camera 3 units along x, 2 along y, 1.5 along z
-camera.position.set(3, 2, -1);
-
-// Make the camera look at the origin (0,0,0)
-camera.lookAt(0, 0, 0);
-
-// arcs (IMPORTANT: recreate geometry each frame → reliable)
-let thetaArc = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({color:0xffffff, dashSize:0.05, gapSize:0.03}));
-let alphaArc = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineDashedMaterial({color:0xffffff, dashSize:0.05, gapSize:0.03}));
-
-scene.add(thetaArc, alphaArc);
-
-// =====================
-// GEOMETRY
-// =====================
-function compute(theta, alpha){
-    const armEnd = new THREE.Vector3(
-        L0*Math.cos(theta),
-        0,
-        L0*Math.sin(theta)
-    );
-
-    const dir = new THREE.Vector3(
-        Math.sin(alpha)*Math.sin(theta),
-        Math.cos(alpha),
-        -Math.sin(alpha)*Math.cos(theta)
-    );
-
-    const pendulumEnd = armEnd.clone().addScaledVector(dir, L1);
-
-    return {armEnd, pendulumEnd};
-}
-
-// =====================
-// ARCS (ROBUST VERSION)
-// =====================
-function buildThetaArc(theta){
-    const pts = [];
-    for(let i=0;i<50;i++){
-        const t = theta * i / 49;
-        pts.push(new THREE.Vector3(
-            arcRadius*Math.cos(t),
-            0,
-            arcRadius*Math.sin(t)
-        ));
-    }
-
-    thetaArc.geometry.dispose();
-    thetaArc.geometry = new THREE.BufferGeometry().setFromPoints(pts);
-    thetaArc.computeLineDistances();
-}
-
-function buildAlphaArc(armEnd, theta, alpha){
-    const pts = [];
-    for(let i=0;i<50;i++){
-        const a = alpha * i / 49;
-
-        pts.push(new THREE.Vector3(
-            armEnd.x + arcRadius*Math.sin(a)*Math.sin(theta),
-            armEnd.y + arcRadius*Math.cos(a),
-            armEnd.z - arcRadius*Math.sin(a)*Math.cos(theta)
-        ));
-    }
-
-    alphaArc.geometry.dispose();
-    alphaArc.geometry = new THREE.BufferGeometry().setFromPoints(pts);
-    alphaArc.computeLineDistances();
-}
-
-// =====================
-// LABELS
-// =====================
-const thetaDiv = document.getElementById("thetaLabel");
-const alphaDiv = document.getElementById("alphaLabel");
-const phaseThetaDiv = document.getElementById("phaseThetaLabel");
-const phaseAlphaDiv = document.getElementById("phaseAlphaLabel");
-const disturbButton = document.getElementById("disturbButton");
-const offControlButton = document.getElementById("offControlButton");
-const offControlTitle = document.getElementById("offControlTitle");
-const offControlSubtitle = document.getElementById("offControlSubtitle");
-const trackingButton = document.getElementById("trackingButton");
-const trackingTitle = document.getElementById("trackingTitle");
-let disturbanceTimer = null;
-const DISTURBANCE_PERIOD_MS = 100;
-const phaseHistory = [];
-const MAX_PHASE_POINTS = 180;
-
-katex.render("\\theta", thetaDiv);
-katex.render("\\alpha", alphaDiv);
-katex.render("\\theta", phaseThetaDiv);
-katex.render("\\alpha", phaseAlphaDiv);
-
-function gaussianRandom(mean = 0, sigma = 1) {
-    const u1 = Math.max(Math.random(), 1e-12);
-    const u2 = Math.random();
-    const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
-    return mean + sigma * z0;
-}
-
-function injectDisturbance() {
-    if (!qube) {
-        console.warn('Simulation not available yet; disturbance skipped.');
-        return;
-    }
-    
-    qube.x[1] += gaussianRandom(0, 1);
-    qube.x[0] += gaussianRandom(0, 1);
-}
-
-function startContinuousDisturbance() {
-    injectDisturbance();
-    if (disturbanceTimer !== null) {
-        return;
-    }
-
-    disturbanceTimer = setInterval(() => {
-        injectDisturbance();
-    }, DISTURBANCE_PERIOD_MS);
-}
-
-function stopContinuousDisturbance() {
-    if (disturbanceTimer === null) {
-        return;
-    }
-
-    clearInterval(disturbanceTimer);
-    disturbanceTimer = null;
-}
-
-disturbButton.addEventListener('pointerdown', (event) => {
-    event.preventDefault();
-    startContinuousDisturbance();
-});
-
-disturbButton.addEventListener('pointerup', stopContinuousDisturbance);
-disturbButton.addEventListener('pointerleave', stopContinuousDisturbance);
-disturbButton.addEventListener('pointercancel', stopContinuousDisturbance);
-window.addEventListener('pointerup', stopContinuousDisturbance);
-window.addEventListener('blur', stopContinuousDisturbance);
-
-function updateModeButtons() {
-    if (!qube) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-        trackingTitle.textContent = 'Turn Reference Tracking On';
-        return;
-    }
-
-    if (qube.controlled) {
-        offControlTitle.textContent = 'Turn Control Off';
-        offControlSubtitle.textContent = 'Disable control';
-    } else {
-        offControlTitle.textContent = 'Turn Control On';
-        offControlSubtitle.textContent = 'Enable control';
-    }
-
-    trackingTitle.textContent = qube.tracking === 'square'
-        ? 'Turn Reference Tracking Off'
-        : 'Turn Reference Tracking On';
-}
-
-offControlButton.addEventListener('click', () => {
-    if (!qube) {
-        return;
-    }
-
-    qube.controlled = !qube.controlled;
-    if (qube.controlled) {
-        qube.x = [0, 0, 0.1, 0.1];
-        qube.xref = [0, 0, 0, 0];
-    } else {
-        qube.tracking = null;
-    }
-    updateModeButtons();
-});
-
-trackingButton.addEventListener('click', () => {
-    if (!qube) {
-        return;
-    }
-
-    if (qube.tracking === 'square') {
-        qube.tracking = null;
-    } else {
-        qube.controlled = true;
-        qube.tracking = 'square';
-        qube.x = [0, 0, 0.1, 0.1];
-        qube.xref = [0, 0, 0, 0];
-    }
-    updateModeButtons();
-});
-
-function drawPhasePlot(theta, alpha) {
-    phaseHistory.push({theta, alpha});
-    if (phaseHistory.length > MAX_PHASE_POINTS) {
-        phaseHistory.shift();
-    }
-
-    const dpr = window.devicePixelRatio || 1;
-    const width = phaseCanvas.clientWidth;
-    const height = phaseCanvas.clientHeight;
-    if (phaseCanvas.width !== Math.floor(width * dpr) || phaseCanvas.height !== Math.floor(height * dpr)) {
-        phaseCanvas.width = Math.floor(width * dpr);
-        phaseCanvas.height = Math.floor(height * dpr);
-    }
-
-    phaseCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    phaseCtx.fillStyle = "#000";
-    phaseCtx.fillRect(0, 0, width, height);
-
-    const pad = {left: 56, right: 22, top: 20, bottom: 62};
-    const xMin = -1;
-    const xMax = 1;
-    const yMin = -1;
-    const yMax = 1;
-
-    const xScale = (width - pad.left - pad.right) / (xMax - xMin);
-    const yScale = (height - pad.top - pad.bottom) / (yMax - yMin);
-    const mapX = (x) => pad.left + (x - xMin) * xScale;
-    const mapY = (y) => height - pad.bottom - (y - yMin) * yScale;
-
-    phaseCtx.strokeStyle = "#666";
-    phaseCtx.lineWidth = 1;
-    phaseCtx.strokeRect(pad.left, pad.top, width - pad.left - pad.right, height - pad.top - pad.bottom);
-
-    const xTicks = [];
-    const yTicks = [];
-    for (let v = -1; v <= 1.0001; v += 0.2) {
-        const rounded = Math.round(v * 10) / 10;
-        xTicks.push(rounded);
-        yTicks.push(rounded);
-    }
-
-    phaseCtx.strokeStyle = "rgba(255,255,255,0.15)";
-    phaseCtx.lineWidth = 1;
-    phaseCtx.beginPath();
-    for (const tx of xTicks) {
-        const x = mapX(tx);
-        phaseCtx.moveTo(x, pad.top);
-        phaseCtx.lineTo(x, height - pad.bottom);
-    }
-    for (const ty of yTicks) {
-        const y = mapY(ty);
-        phaseCtx.moveTo(pad.left, y);
-        phaseCtx.lineTo(width - pad.right, y);
-    }
-    phaseCtx.stroke();
-
-    for (let i = 1; i < phaseHistory.length; i++) {
-        const p0 = phaseHistory[i - 1];
-        const p1 = phaseHistory[i];
-        const x0 = mapX(Math.max(xMin, Math.min(xMax, p0.theta)));
-        const y0 = mapY(Math.max(yMin, Math.min(yMax, p0.alpha)));
-        const x1 = mapX(Math.max(xMin, Math.min(xMax, p1.theta)));
-        const y1 = mapY(Math.max(yMin, Math.min(yMax, p1.alpha)));
-        const age = i / phaseHistory.length;
-        const alphaFade = Math.max(0.06, age * age);
-
-        phaseCtx.strokeStyle = `rgba(102, 204, 255, ${alphaFade.toFixed(3)})`;
-        phaseCtx.lineWidth = 2;
-        phaseCtx.beginPath();
-        phaseCtx.moveTo(x0, y0);
-        phaseCtx.lineTo(x1, y1);
-        phaseCtx.stroke();
-    }
-
-    const currentX = mapX(Math.max(xMin, Math.min(xMax, theta)));
-    const currentY = mapY(Math.max(yMin, Math.min(yMax, alpha)));
-    phaseCtx.fillStyle = "#fff";
-    phaseCtx.beginPath();
-    phaseCtx.arc(currentX, currentY, 5, 0, Math.PI * 2);
-    phaseCtx.fill();
-
-    phaseCtx.fillStyle = "#bbb";
-    phaseCtx.font = "12px Arial";
-    phaseCtx.textAlign = "center";
-    for (const tx of xTicks) {
-        phaseCtx.fillText(tx.toFixed(1), mapX(tx), height - pad.bottom + 20);
-    }
-    phaseCtx.textAlign = "right";
-    for (const ty of yTicks) {
-        phaseCtx.fillText(ty.toFixed(1), pad.left - 8, mapY(ty) + 4);
-    }
-}
-
-function project(v){
-    const p = v.clone().project(camera);
-    return {
-        x:(p.x*0.5+0.5)*renderPanel.clientWidth,
-        y:(-p.y*0.5+0.5)*renderPanel.clientHeight
-    };
-}
-
-// =====================
-// ANIMATION
-// =====================
-let qube = null;
-let tFallback = 0;
-
-function animate(){
-    requestAnimationFrame(animate);
-
-    let theta = 0.1;
-    let alpha = 0.1;
-
-    // Use simulated state when dynamics are available.
-    if (qube) {
-        qube.step();
-        const angles = qube.getAngles();
-        theta = angles.theta;
-        alpha = angles.alpha;
-    } else {
-        // Smooth fallback preview if dynamics are unavailable.
-        tFallback += 0.02;
-        theta = 0.35 * Math.sin(tFallback);
-        alpha = 0.5 * Math.cos(0.8 * tFallback);
-    }
-
-    const {armEnd, pendulumEnd} = compute(theta, alpha);
-
-    updateLine(arm, origin, armEnd);
-    updateLine(pendulum, armEnd, pendulumEnd);
-
-    // vertical reference
-    updateLine(vertical, armEnd, armEnd.clone().add(new THREE.Vector3(0,1,0)));
-
-    buildThetaArc(theta);
-    buildAlphaArc(armEnd, theta, alpha);
-
-    // labels
-    const tPos = project(new THREE.Vector3(
-        0.4*Math.cos(theta/2),
-        0,
-        0.4*Math.sin(theta/2)
-    ));
-
-    thetaDiv.style.left = tPos.x+"px";
-    thetaDiv.style.top = tPos.y+"px";
-
-    const aPos = project(new THREE.Vector3(
-        armEnd.x + 0.5*Math.sin(alpha/2)*Math.sin(theta),
-        armEnd.y + 0.5*Math.cos(alpha/2),
-        armEnd.z - 0.5*Math.sin(alpha/2)*Math.cos(theta)
-    ));
-
-    alphaDiv.style.left = aPos.x+"px";
-    alphaDiv.style.top = aPos.y+"px";
-
-    drawPhasePlot(theta, alpha);
-
-    renderer.render(scene, camera);
-
-    //frame = (frame+1)%thetaFrames.length;
-}
-
-function startSimulation() {
-    if (typeof Qube === 'undefined') {
-        console.error('Qube dynamics did not load. Falling back to preview motion.');
-        animate();
-        return;
-    }
-
-    qube = new Qube({});
-
-    // Start away from equilibrium so the simulation is immediately visible.
-    qube.x = [0, 0, 0.6, 0.35];
-    qube.xref = [0, 0, 0, 0];
-    qube.controlled = true;
-    qube.tracking = null;
-    updateModeButtons();
-
-    animate();
-}
-
-startSimulation();
-
-// resize
-window.addEventListener("resize", ()=>{
-    camera.aspect = renderPanel.clientWidth/renderPanel.clientHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(renderPanel.clientWidth, renderPanel.clientHeight);
-});
-</script>
-
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .main-title {
+            font-size: 3.5em;
+            font-style: italic;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.8em;
+            font-style: italic;
+            color: #34495e;
+        }
+
+        .profile-section {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 40px;
+            align-items: center;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-image {
+            width: 100%;
+            max-width: 350px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .profile-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .profile-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        .profile-text {
+            font-size: 1.05em;
+            line-height: 1.8;
+            color: #555;
+            text-align: justify;
+        }
+
+        .projects-section {
+            margin-top: 50px;
+        }
+
+        .projects-title {
+            font-size: 2em;
+            color: #2c3e50;
+            font-style: italic;
+            margin-bottom: 18px;
+        }
+
+        .project-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+        }
+
+        .project-thumb {
+            width: 96px;
+            height: 96px;
+            object-fit: cover;
+            border-radius: 6px;
+            flex: 0 0 96px;
+        }
+
+        .project-description {
+            flex: 1;
+            text-align: center;
+            color: #34495e;
+            font-size: 1.05em;
+        }
+
+        @media (max-width: 768px) {
+            .profile-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .main-title {
+                font-size: 2.5em;
+            }
+
+            .subtitle {
+                font-size: 1.3em;
+            }
+
+            .profile-image {
+                max-width: 250px;
+                margin: 0 auto;
+            }
+
+            .profile-text {
+                font-size: 0.95em;
+                text-align: left;
+            }
+
+            .projects-title {
+                font-size: 1.6em;
+            }
+
+            .project-card {
+                align-items: flex-start;
+            }
+
+            .project-thumb {
+                width: 80px;
+                height: 80px;
+                flex-basis: 80px;
+            }
+
+            .project-description {
+                text-align: left;
+                font-size: 0.98em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="main-title">Portfolio</h1>
+            <p class="subtitle">Áron Dömötör Kohlhéb</p>
+        </div>
+
+        <div class="profile-section">
+            <div>
+                <img src="assets/AronProfilePicture.jpg" alt="Profile Picture" class="profile-image">
+            </div>
+            <div class="profile-content">
+                <h2 class="profile-title">Profile:</h2>
+                <p class="profile-text">
+                    I am motivated by two core drivers: working on challenging problems and creating value with my work. With a BSc in Aerospace Engineering and an MSc in Systems and Control I am equipped with both a multidisciplinary system-level understanding of aerospace systems, and advanced knowledge in control techniques. Having worked and implemented control solutions taught me software engineering skills and how to use frameworks efficiently. I am looking for a control software engineer role, where I continue to learn and challenge myself in this exciting field.
+                </p>
+            </div>
+        </div>
+
+        <section class="projects-section">
+            <h2 class="projects-title">Projects:</h2>
+            <a class="project-card" href="qube.html">
+                <img src="assets\qube_sketch.png" alt="Qube project sketch" class="project-thumb">
+                <p class="project-description">Inverted pendulum modeling, system identification, linear quadratic regulator, and model predictive control, guarantees and implementation.</p>
+            </a>
+        </section>
+    </div>
 </body>
 </html>
