@@ -140,15 +140,26 @@ body {
     padding: 0 16px;
     box-sizing: border-box;
 }
+.content-sections {
+    margin: 18px auto 24px auto;
+    max-width: 1200px;
+    width: calc(100% - 32px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+}
 .content-section {
-    margin:18px auto 24px auto;
-    max-width:960px;
-    width:calc(100% - 32px);
+    margin:0;
+    flex: 1 1 340px;
+    min-width: 280px;
     color:#333;
     background: white;
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.implementation-section {
+    flex: 2 1 520px;
 }
 .section-title {
     margin:10px 0;
@@ -257,34 +268,36 @@ body {
     </button>
 </div>
 
-<section class="content-section">
-    <h2 class="section-title">Implementation</h2>
-    <div class="video-wrap">
-        <iframe
-            id="implementationVideo"
-            src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
-            title="Implementation results on video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen>
-        </iframe>
-    </div>
-    <div id="videoFallback" class="video-fallback">
-        Embedded playback is blocked in this context. Open the video directly using the link below.
-    </div>
-</section>
+<div class="content-sections">
+    <section class="content-section implementation-section">
+        <h2 class="section-title">Implementation</h2>
+        <div class="video-wrap">
+            <iframe
+                id="implementationVideo"
+                src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
+                title="Implementation results on video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+            </iframe>
+        </div>
+        <div id="videoFallback" class="video-fallback">
+            Embedded playback is blocked in this context. Open the video directly using the link below.
+        </div>
+    </section>
 
-<section class="content-section">
-    <h2 class="section-title">Model</h2>
-    <div id="modelContent" class="model-content">Loading model from qube.tex...</div>
-</section>
+    <section class="content-section">
+        <h2 class="section-title">Model</h2>
+        <div id="modelContent" class="model-content">Loading model from qube.tex...</div>
+    </section>
 
-<section class="content-section">
-    <h2 class="section-title">Reports</h2>
-    <div class="reports-list">
-        <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
-        <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
-    </div>
-</section>
+    <section class="content-section">
+        <h2 class="section-title">Reports</h2>
+        <div class="reports-list">
+            <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
+            <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
+        </div>
+    </section>
+</div>
 
 <div class="back-nav">
     <a class="back-button" href="index.html">Back to Portfolio</a>
