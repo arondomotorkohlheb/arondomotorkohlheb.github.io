@@ -1,0 +1,60 @@
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance=2.6cm, auto, thick,
+    >=Latex,  % use arrows.meta library for Latex arrowheads
+    every node/.style={font=\small}]
+
+% ---------------- Nodes ----------------
+\node[draw, rectangle] (PC) {%
+  \begin{tabular}{l}
+  \textbf{PC} \\ OFF
+  \end{tabular}%
+};
+
+\node[draw, rectangle, right=of PC, xshift=-0.6cm] (RTS) {%
+  \begin{tabular}{l}
+  \textbf{Speedgoat} \\ Real-time \\ Simulink
+  \end{tabular}%
+};
+
+\node[draw, rectangle, right=of RTS, xshift=5.5cm] (PLC) {%
+  \begin{tabular}{l}
+  \textbf{PLC} \\ Beckhoff
+  \end{tabular}%
+};
+
+% ---------------- Summation blocks ----------------
+\node[draw, rectangle, minimum width=6mm, minimum height=6mm,
+      font=\bfseries] (A1) at ($(RTS.east)!0.5!(PLC.west) + (0,6mm)$) {$+$};
+\node[draw, rectangle, minimum width=6mm, minimum height=6mm,
+      font=\bfseries] (A2) at ($(RTS.east)!0.5!(PLC.west) + (0,-6mm)$) {$+$};
+
+% ---------------- Attacker nodes ----------------
+\node[text=red!70!black] (AttY) at ($(A1.north)+(0,10mm)$) {$a_y$};
+\node[text=red!70!black] (AttU) at ($(A2.south)+(0,-10mm)$) {$a_u$};
+
+% ---------------- Attack arrows ----------------
+\draw[red!70!black, ->, thick] (AttY.south) -- (A1.north);
+\draw[red!70!black, ->, thick] (AttU.north) -- (A2.south);
+
+% ---------------- Top channel: left -> right ----------------
+\draw[->, thick] ([yshift=2mm]PC.east) -- ([yshift=2mm]RTS.west) node[midway, above] {$w_{1:N}$};
+\draw[->, thick] ([yshift=2mm]RTS.east) -- (A1.west) node[midway, above] {$(P,x,w)_{1:N}$};
+\draw[->, thick] (A1.east) -- ([yshift=2mm]PLC.west) node[midway, above] {$ (P,x,w)_{1:N} + a_y$};
+
+% ---------------- Bottom channel: right -> left ----------------
+\draw[->, thick] ([yshift=-2mm]PLC.west) -- (A2.east) node[midway, below] {$ (P_{\mathrm{ref}},\gamma_{\mathrm{ref}})_{1:N}$};
+\draw[->, thick] (A2.west) -- ([yshift=-2mm]RTS.east) node[midway, below] {$(P_{\mathrm{ref}}\gamma_{\mathrm{ref}})_{1:N}+a_u$};
+\draw[->, thick] ([yshift=-2mm]RTS.west) -- ([yshift=-2mm]PC.east) node[midway, below] {$(c_t, c_p, \gamma)_{1:N}$};
+
+% ---------------- Plant rectangle ----------------
+\begin{scope}[on background layer]
+\node[draw=green!50!black, dashed, line width=0.5pt,
+      inner ysep=6mm, inner xsep=3mm, outer sep=0pt, fit=(PC)(RTS)] (Plant) {};
+\node[green!50!black, font=\itshape] at (Plant.north) [yshift=3mm] {Plant};
+\end{scope}
+
+\end{tikzpicture}
+\caption{Simulation High-level Architecture with arrowheads}
+\label{fig:archtitecture_summary}
+\end{figure}

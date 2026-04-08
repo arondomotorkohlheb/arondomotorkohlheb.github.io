@@ -25,12 +25,55 @@ body {
     font-style:italic;
 }
 
+.site-header {
+    text-align: center;
+    margin: 28px auto 10px auto;
+    max-width: 1200px;
+    padding: 0 16px;
+}
+
+.portfolio-title {
+    color:#2c3e50;
+    font-size:3em;
+    font-style: italic;
+    margin-bottom: 8px;
+}
+
+.portfolio-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.top-nav {
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom: 8px;
+}
+
+.top-nav a {
+    text-decoration:none;
+    color:#2c3e50;
+    background:#fff;
+    border:1px solid #d7e0e8;
+    border-radius:999px;
+    padding:8px 14px;
+    font-size:16px;
+}
+
+.top-nav a.active {
+    background:#2c3e50;
+    color:#fff;
+    border-color:#2c3e50;
+}
+
 .headline {
     position:relative;
     color:#2c3e50;
     font-size:2.5em;
     font-weight:600;
-    margin:40px auto 10px auto;
+    margin:20px auto 10px auto;
     text-align: center;
     max-width: 1200px;
 }
@@ -140,26 +183,15 @@ body {
     padding: 0 16px;
     box-sizing: border-box;
 }
-.content-sections {
-    margin: 18px auto 24px auto;
-    max-width: 1200px;
-    width: calc(100% - 32px);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-}
 .content-section {
-    margin:0;
-    flex: 1 1 340px;
-    min-width: 280px;
+    margin:18px auto 24px auto;
+    max-width:960px;
+    width:calc(100% - 32px);
     color:#333;
     background: white;
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-.implementation-section {
-    flex: 2 1 520px;
 }
 .section-title {
     margin:10px 0;
@@ -211,6 +243,19 @@ body {
     overflow-x:auto;
     overflow-y:hidden;
 }
+.model-content img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 12px auto;
+}
+.model-content object {
+    width: 100%;
+    min-height: 420px;
+    border: 1px solid #e1e9f0;
+    border-radius: 6px;
+    margin: 12px 0;
+}
 .back-nav {
     margin: 10px auto 40px auto;
     max-width: 960px;
@@ -237,6 +282,15 @@ body {
 </head>
 
 <body>
+
+<header class="site-header">
+    <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
+    <nav class="top-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a class="active" href="qube.html">Inverted Pendulum</a>
+        <a href="testbed.html">Layered Control</a>
+    </nav>
+</header>
 
 <h1 class="headline">Inverted Pendulum Identification and Control</h1>
 <p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo inverted pendulum setup.</p>
@@ -268,36 +322,34 @@ body {
     </button>
 </div>
 
-<div class="content-sections">
-    <section class="content-section implementation-section">
-        <h2 class="section-title">Implementation</h2>
-        <div class="video-wrap">
-            <iframe
-                id="implementationVideo"
-                src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
-                title="Implementation results on video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen>
-            </iframe>
-        </div>
-        <div id="videoFallback" class="video-fallback">
-            Embedded playback is blocked in this context. Open the video directly using the link below.
-        </div>
-    </section>
+<section class="content-section">
+    <h2 class="section-title">Implementation</h2>
+    <div class="video-wrap">
+        <iframe
+            id="implementationVideo"
+            src="https://www.youtube-nocookie.com/embed/A2EXIjPWqo4?rel=0&modestbranding=1&playsinline=1"
+            title="Implementation results on video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+        </iframe>
+    </div>
+    <div id="videoFallback" class="video-fallback">
+        Embedded playback is blocked in this context. Open the video directly using the link below.
+    </div>
+</section>
 
-    <section class="content-section">
-        <h2 class="section-title">Model</h2>
-        <div id="modelContent" class="model-content">Loading model from qube.tex...</div>
-    </section>
+<section class="content-section">
+    <h2 class="section-title">Model</h2>
+    <div id="modelContent" class="model-content">Loading model from qube.tex...</div>
+</section>
 
-    <section class="content-section">
-        <h2 class="section-title">Reports</h2>
-        <div class="reports-list">
-            <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
-            <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
-        </div>
-    </section>
-</div>
+<section class="content-section">
+    <h2 class="section-title">Reports</h2>
+    <div class="reports-list">
+        <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
+        <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
+    </div>
+</section>
 
 <div class="back-nav">
     <a class="back-button" href="index.html">Back to Portfolio</a>
@@ -333,7 +385,13 @@ if (location.protocol === 'file:' && implementationVideo) {
 }
 
 function appendModelText(container, text) {
-    const trimmed = text.trim();
+    const trimmed = text
+        .replace(/\\section\*?\{([^}]*)\}/g, '$1')
+        .replace(/\\subsection\*?\{([^}]*)\}/g, '$1')
+        .replace(/\\subsubsection\*?\{([^}]*)\}/g, '$1')
+        .replace(/\\noindent/g, '')
+        .replace(/\\label\{[^}]*\}/g, '')
+        .trim();
     if (!trimmed) {
         return;
     }
@@ -343,6 +401,27 @@ function appendModelText(container, text) {
     container.appendChild(p);
 }
 
+function appendModelMedia(container, mediaPath) {
+    const normalizedPath = mediaPath.replace(/\\/g, '/').trim();
+    if (!normalizedPath) {
+        return;
+    }
+
+    const ext = normalizedPath.split('.').pop().toLowerCase();
+    if (ext === 'pdf') {
+        const object = document.createElement('object');
+        object.setAttribute('data', normalizedPath);
+        object.setAttribute('type', 'application/pdf');
+        container.appendChild(object);
+        return;
+    }
+
+    const img = document.createElement('img');
+    img.src = normalizedPath;
+    img.alt = normalizedPath.split('/').pop();
+    container.appendChild(img);
+}
+
 function normalizeEquation(eq) {
     return eq
         .replace(/\bsin\s*\(/g, '\\sin(')
@@ -350,34 +429,38 @@ function normalizeEquation(eq) {
         .replace(/sin\\theta/g, '\\sin(\\theta)');
 }
 
-function renderModelFromTex(tex) {
-    if (!modelContent) {
+function renderTexInto(container, tex) {
+    if (!container) {
         return;
     }
 
-    modelContent.innerHTML = '';
+    container.innerHTML = '';
 
-    const regex = /\\begin\{equation\}([\s\S]*?)\\end\{equation\}/g;
+    const regex = /\\begin\{(equation|align)\*?\}([\s\S]*?)\\end\{\1\*?\}|\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}/g;
     let lastIndex = 0;
     let match = null;
     let foundEquation = false;
 
     while ((match = regex.exec(tex)) !== null) {
-        appendModelText(modelContent, tex.slice(lastIndex, match.index));
+        appendModelText(container, tex.slice(lastIndex, match.index));
 
-        const eqBlock = document.createElement('div');
-        const eqText = normalizeEquation(match[1].trim());
-        katex.render(eqText, eqBlock, {
-            displayMode: true,
-            throwOnError: false
-        });
-        modelContent.appendChild(eqBlock);
+        if (match[3]) {
+            appendModelMedia(container, match[3]);
+        } else {
+            const eqBlock = document.createElement('div');
+            const eqText = normalizeEquation(match[2].trim());
+            katex.render(eqText, eqBlock, {
+                displayMode: true,
+                throwOnError: false
+            });
+            container.appendChild(eqBlock);
+            foundEquation = true;
+        }
 
         lastIndex = regex.lastIndex;
-        foundEquation = true;
     }
 
-    appendModelText(modelContent, tex.slice(lastIndex));
+    appendModelText(container, tex.slice(lastIndex));
 
     if (!foundEquation && tex.trim()) {
         const fallback = document.createElement('div');
@@ -385,8 +468,8 @@ function renderModelFromTex(tex) {
             displayMode: true,
             throwOnError: false
         });
-        modelContent.innerHTML = '';
-        modelContent.appendChild(fallback);
+        container.innerHTML = '';
+        container.appendChild(fallback);
     }
 }
 
@@ -401,7 +484,7 @@ async function loadModelTex() {
             throw new Error(`HTTP ${response.status}`);
         }
         const tex = await response.text();
-        renderModelFromTex(tex);
+        renderTexInto(modelContent, tex);
     } catch (error) {
         modelContent.textContent = 'Could not load qube.tex in this browser context. Open qube.tex directly from the reports section or run via a local server.';
     }

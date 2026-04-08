@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Layered Control Testbed</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f5f5f5;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+.page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 16px 40px;
+}
+
+.site-header {
+    text-align: center;
+    margin: 28px auto 10px auto;
+    max-width: 1200px;
+    padding: 0 16px;
+}
+
+.portfolio-title {
+    color: #2c3e50;
+    font-size: 3em;
+    font-style: italic;
+    margin-bottom: 8px;
+}
+
+.portfolio-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.top-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.top-nav a {
+    text-decoration: none;
+    color: #2c3e50;
+    background: #fff;
+    border: 1px solid #d7e0e8;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 16px;
+}
+
+.top-nav a.active {
+    background: #2c3e50;
+    color: #fff;
+    border-color: #2c3e50;
+}
+
+.headline {
+    color: #2c3e50;
+    font-size: 2.3em;
+    font-style: italic;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.subtitle {
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.content-section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-size: 1.5em;
+    margin-bottom: 14px;
+    font-style: italic;
+}
+
+.tex-content {
+    color: #555;
+    font-size: 1.02em;
+}
+
+.tex-content p {
+    margin-bottom: 12px;
+}
+
+.tex-content .math-block {
+    margin: 16px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.tex-content .tikz-block {
+    margin: 18px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 8px;
+    background: #fafcfe;
+    border: 1px solid #e1e9f0;
+    border-radius: 6px;
+}
+
+.tex-content .flowchart-svg {
+    width: 100%;
+    min-width: 880px;
+    height: auto;
+    display: block;
+}
+
+.tex-content .media-block {
+    margin: 16px 0;
+}
+
+.tex-content .media-block img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.tex-content .media-block object {
+    width: 100%;
+    min-height: 480px;
+    border: 1px solid #e1e9f0;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.tex-content .media-fallback-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.tex-content .media-fallback-link:hover {
+    text-decoration: underline;
+}
+
+.tex-content .raw-tex {
+    white-space: pre-wrap;
+    background: #f8fafc;
+    border-left: 4px solid #d0dde7;
+    border-radius: 6px;
+    padding: 12px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 0.93em;
+}
+
+.back-nav {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.farm-viz-status {
+    color: #51606f;
+    margin-bottom: 10px;
+}
+
+.farm-top-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.farm-top-panel {
+    border: 0;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+}
+
+.wind-dial-wrap {
+    position: relative;
+}
+
+.wind-dial-value {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    margin: 0;
+    background: rgba(255, 255, 255, 0.88);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.plot-math-title {
+    color: #2c3e50;
+    font-size: 0.98em;
+    margin: 6px 0 4px;
+}
+
+.local-controller-section {
+    margin-top: 18px;
+}
+
+.local-controller-title {
+    margin-bottom: 8px;
+}
+
+.pdf-flat-wrap {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    overflow: hidden;
+}
+
+.pdf-page-wrap {
+    position: relative;
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
+.pdf-page-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
+.pdf-link-layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.pdf-link-layer a {
+    position: absolute;
+    display: block;
+    background: transparent;
+    text-decoration: none;
+}
+
+.farm-plot {
+    width: 100%;
+    height: 340px;
+    margin: 12px 0;
+    border: 1px solid #e1e9f0;
+    border-radius: 6px;
+    display: block;
+    background: #fff;
+}
+
+#farmPlotLayout {
+    height: 320px;
+}
+
+#windDirectionDial {
+    height: 320px;
+}
+
+#windDirectionDial,
+#farmPlotLayout {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+#farmPlotPower,
+#farmPlotBeta,
+#farmPlotOmega {
+    border-radius: 0;
+}
+
+.back-button {
+    display: inline-block;
+    text-decoration: none;
+    background: #fff;
+    color: #2c3e50;
+    border: 2px solid #fff;
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-size: 1.1em;
+    font-style: italic;
+    transition: transform 0.2s ease;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .headline {
+        font-size: 1.8em;
+    }
+
+    .content-section {
+        padding: 18px;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="page">
+    <header class="site-header">
+        <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
+        <nav class="top-nav" aria-label="Primary">
+            <a href="index.html">Home</a>
+            <a href="qube.html">Inverted Pendulum</a>
+            <a class="active" href="testbed.html">Layered Control</a>
+        </nav>
+    </header>
+
+    <h1 class="headline">Layered Control Design and Hardware-in-the-Loop Testbed Construction.</h1>
+    <p class="subtitle">Constructed a real-time hardware-in-the-loop simulation for wind farms in order to enable testing of cyber attack detection mechanism. The flow field is computed by two python frameworks that are modified to work with external simulation of the turbines. The wakes introduce a coupling between the turbines and the turbines benefit from a higher frequency local controller to counteract the wakes, therefore the a layered control is developed to meet external power needs while minimizing loads on the turbines.</p>
+
+    <section class="content-section">
+        <h2 class="section-title">Hardware-in-the-loop Architecture</h2>
+        <div id="texContent" class="tex-content">Loading content from testbed.tex...</div>
+    </section>
+
+    <section class="content-section" style="margin-top: 18px;">
+        <h2 class="section-title">Layered Control Performance</h2>
+        <div id="farmPlaybackTime" class="farm-viz-status">$t = 0.0\ \mathrm{s}$</div>
+        <div class="farm-top-panel">
+            <div class="farm-top-row">
+                <div class="wind-dial-wrap">
+                    <canvas id="windDirectionDial" class="farm-plot"></canvas>
+                    <div id="windDialValue" class="plot-math-title wind-dial-value"></div>
+                </div>
+                <canvas id="farmPlotLayout" class="farm-plot"></canvas>
+            </div>
+        </div>
+        <div id="powerPlotTitle" class="plot-math-title"></div>
+        <canvas id="farmPlotPower" class="farm-plot"></canvas>
+        <div id="betaPlotTitle" class="plot-math-title"></div>
+        <canvas id="farmPlotBeta" class="farm-plot"></canvas>
+        <div id="omegaPlotTitle" class="plot-math-title"></div>
+        <canvas id="farmPlotOmega" class="farm-plot"></canvas>
+
+    </section>
+
+    <section class="content-section" style="margin-top: 18px;">
+        <h2 class="section-title">Local Controller</h2>
+        <div id="localControllerPdf" class="pdf-flat-wrap"></div>
+    </section>
+
+    <section class="content-section" style="margin-top: 18px;">
+        <h2 class="section-title">Supervisory Controller</h2>
+        <div id="supervisoryControllerPdf" class="pdf-flat-wrap"></div>
+    </section>
+
+    <div class="back-nav">
+        <a class="back-button" href="index.html">Back to Portfolio</a>
+    </div>
+</div>
+
+<script>
+const texContent = document.getElementById('texContent');
+const farmPlaybackTime = document.getElementById('farmPlaybackTime');
+const windDialValue = document.getElementById('windDialValue');
+const betaPlotTitle = document.getElementById('betaPlotTitle');
+const omegaPlotTitle = document.getElementById('omegaPlotTitle');
+const powerPlotTitle = document.getElementById('powerPlotTitle');
+const windDirectionDial = document.getElementById('windDirectionDial');
+const farmPlotLayout = document.getElementById('farmPlotLayout');
+const farmPlotBeta = document.getElementById('farmPlotBeta');
+const farmPlotOmega = document.getElementById('farmPlotOmega');
+const farmPlotPower = document.getElementById('farmPlotPower');
+const localControllerPdf = document.getElementById('localControllerPdf');
+const supervisoryControllerPdf = document.getElementById('supervisoryControllerPdf');
+const ARCHITECTURE_IMAGE_FILE = 'assets/testbed/testbed_architecture.svg';
+const LOCAL_CONTROLLER_PDF_FILE = 'assets/testbed/local_controller_testbed.pdf';
+const SUPERVISORY_CONTROLLER_PDF_FILE = 'assets/testbed/supervisory_controller.pdf';
+const FARM_DATA_FILE = 'assets/testbed/data/speedgoat_180_280_yaw_steering.npy';
+
+const LAYOUT_X = [1347.6, 1640.9, 2248, 1934.2, 3149.3, 2227.5, 4218.2, 2520.8, 4097, 4036.4];
+const LAYOUT_Y = [919, 1662.5, 1001, 2406, 1083.9, 3149.5, 1564.4, 3893, 2666.3, 3711.2];
+const FARM_BOUNDARY = { xMin: 0, xMax: 5000, yMin: 0, yMax: 5000 };
+const TURBINE_DIAMETER = 284;
+
+const IDX_BETA_REF = 0;
+const IDX_OMEGA_REF = 2;
+const IDX_BETA = 3;
+const IDX_GAMMA = 4;
+const IDX_OMEGA = 5;
+const IDX_P_REF = 7;
+const IDX_P_GEN = 8;
+const ANIMATION_DURATION_MS = 10000;
+const MEAN_POWER_COLOR = '#17becf';
+const CANVAS_RENDER_SCALE = 1.35;
+
+const plotPalette = [
+    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+    '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+];
+
+let farmAnimationHandle = null;
+let latestFarmModel = null;
+let latestFarmFrameIndex = 0;
+let lastWindLabelTenth = -1;
+let lastPlaybackLabelTenth = -1;
+let localControllerPdfDoc = null;
+let localControllerRenderToken = 0;
+let supervisoryControllerPdfDoc = null;
+let supervisoryControllerRenderToken = 0;
+let pdfjsLibModule = null;
+
+function renderMathBlock(container, tex) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'math-block';
+    katex.render(tex.trim(), wrapper, {
+        displayMode: true,
+        throwOnError: false
+    });
+    container.appendChild(wrapper);
+}
+
+function parseNpy(arrayBuffer) {
+    const view = new DataView(arrayBuffer);
+    const decoder = new TextDecoder('ascii');
+
+    const magic = new Uint8Array(arrayBuffer, 0, 6);
+    const expectedMagic = [0x93, 0x4e, 0x55, 0x4d, 0x50, 0x59];
+    for (let i = 0; i < expectedMagic.length; i += 1) {
+        if (magic[i] !== expectedMagic[i]) {
+            throw new Error('Invalid NPY file signature');
+        }
+    }
+
+    if (arrayBuffer.byteLength < 12) {
+        throw new Error('Invalid NPY file signature');
+    }
+
+    const major = view.getUint8(6);
+    const headerLengthOffset = 8;
+    let headerLen = 0;
+    let dataOffset = 0;
+
+    if (major === 1) {
+        headerLen = view.getUint16(headerLengthOffset, true);
+        dataOffset = 10 + headerLen;
+    } else if (major === 2 || major === 3) {
+        headerLen = view.getUint32(headerLengthOffset, true);
+        dataOffset = 12 + headerLen;
+    } else {
+        throw new Error(`Unsupported NPY version ${major}`);
+    }
+
+    const headerStart = major === 1 ? 10 : 12;
+    const headerText = decoder.decode(new Uint8Array(arrayBuffer, headerStart, headerLen));
+
+    const descrMatch = headerText.match(/'descr'\s*:\s*'([^']+)'/);
+    const shapeMatch = headerText.match(/'shape'\s*:\s*\(([^\)]*)\)/);
+    const fortranMatch = headerText.match(/'fortran_order'\s*:\s*(True|False)/);
+
+    if (!descrMatch || !shapeMatch || !fortranMatch) {
+        throw new Error('NPY header is missing required fields');
+    }
+
+    const descr = descrMatch[1];
+    const shape = shapeMatch[1]
+        .split(',')
+        .map(part => part.trim())
+        .filter(part => part.length > 0)
+        .map(part => Number(part));
+
+    if (fortranMatch[1] === 'True') {
+        throw new Error('Fortran-ordered NPY arrays are not supported in this page');
+    }
+
+    let typed = null;
+    if (descr === '<f8' || descr === '|f8') {
+        typed = new Float64Array(arrayBuffer, dataOffset);
+    } else if (descr === '<f4' || descr === '|f4') {
+        typed = new Float32Array(arrayBuffer, dataOffset);
+    } else if (descr === '<i4' || descr === '|i4') {
+        typed = new Int32Array(arrayBuffer, dataOffset);
+    } else {
+        throw new Error(`Unsupported dtype ${descr}`);
+    }
+
+    return { data: typed, shape };
+}
+
+function index3D(shape, i, j, k) {
+    return (i * shape[1] + j) * shape[2] + k;
+}
+
+function linspace(start, end, count) {
+    if (count <= 1) {
+        return [start];
+    }
+    const out = new Array(count);
+    const step = (end - start) / (count - 1);
+    for (let i = 0; i < count; i += 1) {
+        out[i] = start + i * step;
+    }
+    return out;
+}
+
+function extractSignal(dataFlat, shape, signalIndex, turbineIndex) {
+    const samples = shape[0];
+    const values = new Array(samples);
+    for (let i = 0; i < samples; i += 1) {
+        values[i] = Number(dataFlat[index3D(shape, i, turbineIndex, signalIndex)]);
+    }
+    return values;
+}
+
+function meanAcrossTurbines(dataFlat, shape, signalIndex) {
+    const samples = shape[0];
+    const turbines = shape[1];
+    const out = new Array(samples);
+    for (let i = 0; i < samples; i += 1) {
+        let sum = 0;
+        for (let k = 0; k < turbines; k += 1) {
+            sum += Number(dataFlat[index3D(shape, i, k, signalIndex)]);
+        }
+        out[i] = sum / turbines;
+    }
+    return out;
+}
+
+function setPlaybackTime(timeSeconds) {
+    if (!farmPlaybackTime) {
+        return;
+    }
+
+    const tenth = Math.round(timeSeconds * 10);
+    if (tenth === lastPlaybackLabelTenth) {
+        return;
+    }
+    lastPlaybackLabelTenth = tenth;
+
+    if (window.katex) {
+        katex.render(`t = ${timeSeconds.toFixed(1)}\\,\\mathrm{s}`, farmPlaybackTime, {
+            throwOnError: false,
+            displayMode: false
+        });
+    } else {
+        farmPlaybackTime.textContent = `t = ${timeSeconds.toFixed(1)} s`;
+    }
+}
+
+function ensureMathTitlesRendered() {
+    if (!window.katex) {
+        return false;
+    }
+
+    renderMathLabel(windDialValue, '\\gamma_{wind} = 180.0^{\\circ}');
+    renderMathLabel(betaPlotTitle, '\\beta \\text{ vs } \\beta_{ref}');
+    renderMathLabel(omegaPlotTitle, '\\omega \\text{ vs } \\omega_{ref}');
+    renderMathLabel(powerPlotTitle, 'P_{1:N},\\ \\color{#17becf}{P_{\\Sigma}/N}');
+    return true;
+}
+
+function renderMathLabel(container, tex) {
+    if (!container) {
+        return;
+    }
+
+    if (window.katex) {
+        katex.render(tex, container, {
+            throwOnError: false,
+            displayMode: false
+        });
+    } else {
+        container.textContent = tex;
+    }
+}
+
+function setupCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const scale = Math.min(4, dpr * CANVAS_RENDER_SCALE);
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(320, Math.floor(rect.width));
+    const height = Math.max(280, Math.floor(rect.height));
+
+    canvas.width = Math.floor(width * scale);
+    canvas.height = Math.floor(height * scale);
+
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    return { ctx, width, height };
+}
+
+function drawLegend(ctx, items, x, y, options = {}) {
+    let cursorY = y;
+    const colWidth = options.colWidth || 150;
+    const rowHeight = options.rowHeight || 16;
+    const cols = Math.max(1, options.cols || 1);
+
+    const rows = Math.ceil(items.length / cols);
+    const width = colWidth * cols + 10;
+    const height = rows * rowHeight + 12;
+
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+    ctx.strokeStyle = '#d2dde8';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.rect(x - 6, y - 10, width, height);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.font = '12px Segoe UI';
+    ctx.textBaseline = 'middle';
+
+    for (let i = 0; i < items.length; i += 1) {
+        const item = items[i];
+        const col = Math.floor(i / rows);
+        const row = i % rows;
+        const lineX = x + col * colWidth;
+        cursorY = y + row * rowHeight;
+
+        ctx.save();
+        ctx.globalAlpha = item.alpha == null ? 1 : item.alpha;
+        ctx.strokeStyle = item.color;
+        ctx.lineWidth = item.width || 2;
+        ctx.setLineDash(item.dash || []);
+        ctx.beginPath();
+        ctx.moveTo(lineX, cursorY);
+        ctx.lineTo(lineX + 24, cursorY);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.fillStyle = '#2c3e50';
+        ctx.fillText(item.label, lineX + 30, cursorY);
+    }
+}
+
+function drawFarmPlot(canvas, options) {
+    const { ctx, width, height } = setupCanvas(canvas);
+    const margin = { top: 0, right: 0, bottom: 0, left: 0 };
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+
+    const x = options.x;
+    const traces = options.traces;
+    const maxIndex = Math.max(0, Math.min(x.length - 1, options.maxIndex == null ? x.length - 1 : options.maxIndex));
+    let yMin = Infinity;
+    let yMax = -Infinity;
+
+    for (const trace of traces) {
+        for (const v of trace.y) {
+            if (Number.isFinite(v)) {
+                if (v < yMin) {
+                    yMin = v;
+                }
+                if (v > yMax) {
+                    yMax = v;
+                }
+            }
+        }
+    }
+
+    if (!Number.isFinite(yMin) || !Number.isFinite(yMax)) {
+        yMin = -1;
+        yMax = 1;
+    }
+    if (yMin === yMax) {
+        yMin -= 1;
+        yMax += 1;
+    }
+
+    const yPad = 0.06 * (yMax - yMin);
+    yMin -= yPad;
+    yMax += yPad;
+
+    const xMin = x[0];
+    const xMax = x[x.length - 1];
+
+    const xToPx = (v) => margin.left + ((v - xMin) / (xMax - xMin || 1)) * plotW;
+    const yToPx = (v) => margin.top + (1 - (v - yMin) / (yMax - yMin || 1)) * plotH;
+
+    ctx.strokeStyle = '#e7edf3';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+
+    for (let i = 0; i <= 5; i += 1) {
+        const gy = margin.top + (i / 5) * plotH;
+        ctx.beginPath();
+        ctx.moveTo(margin.left, gy);
+        ctx.lineTo(margin.left + plotW, gy);
+        ctx.stroke();
+    }
+    for (let i = 0; i <= 6; i += 1) {
+        const gx = margin.left + (i / 6) * plotW;
+        ctx.beginPath();
+        ctx.moveTo(gx, margin.top);
+        ctx.lineTo(gx, margin.top + plotH);
+        ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#8fa1b3';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(margin.left, margin.top);
+    ctx.lineTo(margin.left, margin.top + plotH);
+    ctx.lineTo(margin.left + plotW, margin.top + plotH);
+    ctx.stroke();
+
+    for (const trace of traces) {
+        ctx.save();
+        ctx.globalAlpha = trace.alpha == null ? 1 : trace.alpha;
+        ctx.strokeStyle = trace.color;
+        ctx.lineWidth = trace.width || 1.5;
+        ctx.setLineDash(trace.dash || []);
+        ctx.beginPath();
+        for (let i = 0; i <= maxIndex; i += 1) {
+            const px = xToPx(x[i]);
+            const py = yToPx(trace.y[i]);
+            if (i === 0) {
+                ctx.moveTo(px, py);
+            } else {
+                ctx.lineTo(px, py);
+            }
+        }
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '600 15px Segoe UI';
+    ctx.textAlign = 'center';
+    if (options.title) {
+        ctx.fillText(options.title, width / 2, 20);
+    }
+
+    // Axis titles intentionally omitted per page design.
+
+    if (options.legend && options.legend.length > 0) {
+        const legendX = options.legendX != null ? options.legendX : margin.left + 8;
+        const legendY = options.legendY != null ? options.legendY : margin.top + 12;
+        drawLegend(ctx, options.legend, legendX, legendY, {
+            cols: options.legendCols || 1,
+            colWidth: options.legendColWidth || 150,
+            rowHeight: 16
+        });
+    }
+}
+
+function drawWindDirectionDial(canvas, windDeg) {
+    if (!canvas) {
+        return;
+    }
+
+    const { ctx, width, height } = setupCanvas(canvas);
+    const cx = width / 2;
+    const cy = height / 2 + 6;
+    const radius = Math.min(width, height) * 0.30;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '600 15px Segoe UI';
+    ctx.textAlign = 'center';
+
+    ctx.strokeStyle = '#9ab0c3';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#dfe8f0';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 12; i += 1) {
+        const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+        const x1 = cx + (radius - 8) * Math.cos(a);
+        const y1 = cy + (radius - 8) * Math.sin(a);
+        const x2 = cx + radius * Math.cos(a);
+        const y2 = cy + radius * Math.sin(a);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+
+    ctx.fillStyle = '#4b5c6b';
+    ctx.font = '12px Segoe UI';
+    ctx.fillText('N', cx, cy - radius - 10);
+    ctx.fillText('S', cx, cy + radius + 18);
+    ctx.fillText('E', cx + radius + 14, cy + 4);
+    ctx.fillText('W', cx - radius - 14, cy + 4);
+
+    const arrowRad = (windDeg - 90) * (Math.PI / 180);
+    const ax = cx + (radius - 18) * Math.cos(arrowRad);
+    const ay = cy + (radius - 18) * Math.sin(arrowRad);
+
+    ctx.strokeStyle = '#d32f2f';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(ax, ay);
+    ctx.stroke();
+
+    const headSize = 10;
+    const left = arrowRad + Math.PI * 0.85;
+    const right = arrowRad - Math.PI * 0.85;
+    ctx.fillStyle = '#d32f2f';
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax + headSize * Math.cos(left), ay + headSize * Math.sin(left));
+    ctx.lineTo(ax + headSize * Math.cos(right), ay + headSize * Math.sin(right));
+    ctx.closePath();
+    ctx.fill();
+
+    // gamma_wind value is rendered via the KaTeX overlay label inside the dial container.
+}
+
+function drawFarmLayoutPlot(canvas, options = {}) {
+    if (!canvas) {
+        return;
+    }
+
+    const { ctx, width, height } = setupCanvas(canvas);
+    const margin = { top: 48, right: 18, bottom: 18, left: 18 };
+    const plotW = width - margin.left - margin.right;
+    const plotH = height - margin.top - margin.bottom;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, width, height);
+
+    const xMin = FARM_BOUNDARY.xMin;
+    const xMax = FARM_BOUNDARY.xMax;
+    const yMin = FARM_BOUNDARY.yMin;
+    const yMax = FARM_BOUNDARY.yMax;
+
+    const scaleX = plotW / (xMax - xMin);
+    const scaleY = plotH / (yMax - yMin);
+    const scale = Math.min(scaleX, scaleY);
+
+    const usedW = (xMax - xMin) * scale;
+    const usedH = (yMax - yMin) * scale;
+    const xOffset = margin.left + (plotW - usedW) / 2;
+    const yOffset = margin.top + (plotH - usedH) / 2;
+
+    const xToPx = (x) => xOffset + (x - xMin) * scale;
+    const yToPx = (y) => yOffset + usedH - (y - yMin) * scale;
+
+    ctx.strokeStyle = '#e7edf3';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    for (let i = 0; i <= 10; i += 1) {
+        const gx = xToPx(xMin + ((xMax - xMin) * i) / 10);
+        ctx.beginPath();
+        ctx.moveTo(gx, yOffset);
+        ctx.lineTo(gx, yOffset + usedH);
+        ctx.stroke();
+    }
+    for (let i = 0; i <= 10; i += 1) {
+        const gy = yToPx(yMin + ((yMax - yMin) * i) / 10);
+        ctx.beginPath();
+        ctx.moveTo(xOffset, gy);
+        ctx.lineTo(xOffset + usedW, gy);
+        ctx.stroke();
+    }
+
+    ctx.setLineDash([]);
+    ctx.strokeStyle = '#8fa1b3';
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(xOffset, yOffset, usedW, usedH);
+
+    const nacelleRadiusPx = (TURBINE_DIAMETER / 2) * 0.1 * scale;
+    const yawLineLengthPx = (TURBINE_DIAMETER / 2) * 3.0 * scale;
+    const yawSeries = options.yawSeries || [];
+    const frameIndex = options.frameIndex == null ? 0 : options.frameIndex;
+
+    for (let i = 0; i < LAYOUT_X.length; i += 1) {
+        const color = plotPalette[i % plotPalette.length];
+        const cx = xToPx(LAYOUT_X[i]);
+        const cy = yToPx(LAYOUT_Y[i]);
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(cx, cy, nacelleRadiusPx, 0, Math.PI * 2);
+        ctx.stroke();
+
+        let yawRad = 0;
+        if (yawSeries[i] && yawSeries[i].length > 0) {
+            const rawYaw = Number(yawSeries[i][Math.min(frameIndex, yawSeries[i].length - 1)]);
+            yawRad = Math.abs(rawYaw) > (2 * Math.PI + 0.5) ? (rawYaw * Math.PI / 180) : rawYaw;
+        }
+
+        const half = yawLineLengthPx * 0.5;
+        const dx = half * Math.cos(yawRad);
+        const dy = half * Math.sin(yawRad);
+
+        ctx.beginPath();
+        ctx.moveTo(cx - dx, cy - dy);
+        ctx.lineTo(cx + dx, cy + dy);
+        ctx.stroke();
+
+        // Value label is rendered as KaTeX below the compass.
+        ctx.fillText(String(i + 1), cx + 6, cy - 6);
+
+    }
+
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '600 15px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('Wind Farm Layout', width / 2, 24);
+
+    // Layout axis titles intentionally omitted.
+
+}
+
+function renderFarmFrame(model, frameIndex, progress) {
+    const windDeg = 180 + 100 * progress;
+    drawWindDirectionDial(windDirectionDial, windDeg);
+
+    const windTenth = Math.round(windDeg * 10);
+    if (windTenth !== lastWindLabelTenth) {
+        lastWindLabelTenth = windTenth;
+        renderMathLabel(windDialValue, `\\gamma_{wind} = ${windDeg.toFixed(1)}^{\\circ}`);
+    }
+
+    drawFarmLayoutPlot(farmPlotLayout, {
+        yawSeries: model.yawSeries,
+        frameIndex
+    });
+
+    drawFarmPlot(farmPlotBeta, {
+        x: model.t,
+        traces: model.betaTraces,
+        maxIndex: frameIndex,
+        title: '',
+        yLabel: 'beta [deg]'
+    });
+
+    drawFarmPlot(farmPlotOmega, {
+        x: model.t,
+        traces: model.omegaTraces,
+        maxIndex: frameIndex,
+        title: '',
+        yLabel: 'omega [rad/s]'
+    });
+
+    drawFarmPlot(farmPlotPower, {
+        x: model.t,
+        traces: model.powerTraces,
+        maxIndex: frameIndex,
+        title: '',
+        yLabel: 'P [W]'
+    });
+
+    setPlaybackTime(model.t[frameIndex]);
+}
+
+function startFarmAnimation(model) {
+    if (farmAnimationHandle) {
+        cancelAnimationFrame(farmAnimationHandle);
+        farmAnimationHandle = null;
+    }
+
+    const start = performance.now();
+    const lastIndex = model.samples - 1;
+
+    const tick = (now) => {
+        const elapsed = now - start;
+        const progress = Math.max(0, Math.min(1, elapsed / ANIMATION_DURATION_MS));
+        const frameIndex = Math.min(lastIndex, Math.floor(progress * lastIndex));
+        latestFarmFrameIndex = frameIndex;
+
+        renderFarmFrame(model, frameIndex, progress);
+
+        if (progress < 1) {
+            farmAnimationHandle = requestAnimationFrame(tick);
+        } else {
+            farmAnimationHandle = null;
+        }
+    };
+
+    farmAnimationHandle = requestAnimationFrame(tick);
+}
+
+async function renderFarmPlotsFromFile(filePath) {
+    if (!farmPlotBeta || !farmPlotOmega || !farmPlotPower) {
+        return;
+    }
+
+    const response = await fetch(filePath, { cache: 'no-store' });
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status} while loading ${filePath}`);
+    }
+
+    const npy = parseNpy(await response.arrayBuffer());
+    if (npy.shape.length !== 3) {
+        throw new Error(`Expected 3D array, got shape ${JSON.stringify(npy.shape)}`);
+    }
+
+    const samples = npy.shape[0];
+    const turbines = npy.shape[1];
+    const signals = npy.shape[2];
+    if (signals < 9) {
+        throw new Error(`Expected at least 9 logged signals, got ${signals}`);
+    }
+
+    const t = linspace(0, samples * 2, samples);
+    const betaTraces = [];
+    const omegaTraces = [];
+    const powerTraces = [];
+    const yawSeries = [];
+
+    for (let k = 0; k < turbines; k += 1) {
+        const color = plotPalette[k % plotPalette.length];
+        const beta = extractSignal(npy.data, npy.shape, IDX_BETA, k);
+        const betaRef = extractSignal(npy.data, npy.shape, IDX_BETA_REF, k);
+        const omega = extractSignal(npy.data, npy.shape, IDX_OMEGA, k);
+        const omegaRef = extractSignal(npy.data, npy.shape, IDX_OMEGA_REF, k).map(v => Math.abs(v));
+        const yaw = extractSignal(npy.data, npy.shape, IDX_GAMMA, k);
+        const pGen = extractSignal(npy.data, npy.shape, IDX_P_GEN, k);
+        const pRef = extractSignal(npy.data, npy.shape, IDX_P_REF, k);
+        yawSeries.push(yaw);
+
+        betaTraces.push({
+            y: beta,
+            color,
+            width: 1.8,
+            label: `Turbine ${k + 1} achieved`
+        });
+        betaTraces.push({
+            y: betaRef,
+            color,
+            width: 1.8,
+            dash: [6, 4],
+            label: `Turbine ${k + 1} reference`
+        });
+
+        omegaTraces.push({
+            y: omega,
+            color,
+            width: 1.7,
+            label: `Turbine ${k + 1}`
+        });
+        omegaTraces.push({
+            y: omegaRef,
+            color,
+            width: 1.7,
+            dash: [6, 4],
+            label: `Turbine ${k + 1} ref`
+        });
+
+        powerTraces.push({
+            y: pGen,
+            color,
+            width: 1.4,
+            opacity: 0.6,
+            label: `P_gen T${k + 1}`
+        });
+        powerTraces.push({
+            y: pRef,
+            color,
+            width: 1.1,
+            dash: [6, 4],
+            opacity: 0.6,
+            label: `P_ref T${k + 1}`
+        });
+    }
+
+    const pGenAvg = meanAcrossTurbines(npy.data, npy.shape, IDX_P_GEN);
+    const pRefAvg = meanAcrossTurbines(npy.data, npy.shape, IDX_P_REF);
+    const meanColor = MEAN_POWER_COLOR;
+
+    powerTraces.push({
+        y: pGenAvg,
+        color: meanColor,
+        width: 2.4,
+        label: 'P_Sigma/N'
+    });
+    powerTraces.push({
+        y: pRefAvg,
+        color: meanColor,
+        width: 2.4,
+        dash: [6, 4],
+        label: 'P_ref,Sigma/N'
+    });
+
+    latestFarmModel = {
+        t,
+        betaTraces,
+        omegaTraces,
+        powerTraces,
+        yawSeries,
+        meanColor,
+        samples,
+        turbines,
+        shape: npy.shape
+    };
+
+    startFarmAnimation(latestFarmModel);
+}
+
+function initFarmVisualization() {
+    if (!ensureMathTitlesRendered()) {
+        const waitForKatex = () => {
+            if (ensureMathTitlesRendered()) {
+                return;
+            }
+            window.setTimeout(waitForKatex, 50);
+        };
+        waitForKatex();
+    }
+
+    setPlaybackTime(0);
+
+    renderFarmPlotsFromFile(FARM_DATA_FILE).catch((error) => {
+        console.error(`Could not render dataset: ${error.message}`);
+    });
+}
+
+window.addEventListener('resize', () => {
+    if (!latestFarmModel) {
+        return;
+    }
+    const progress = latestFarmModel.samples > 1 ? latestFarmFrameIndex / (latestFarmModel.samples - 1) : 0;
+    renderFarmFrame(latestFarmModel, latestFarmFrameIndex, progress);
+});
+
+function normalizeMediaPath(path) {
+    return path.replace(/\\/g, '/').trim();
+}
+
+function renderMediaBlock(container, rawPath) {
+    const mediaPath = normalizeMediaPath(rawPath);
+    if (!mediaPath) {
+        return;
+    }
+
+    const ext = mediaPath.split('.').pop().toLowerCase();
+    const wrapper = document.createElement('div');
+    wrapper.className = 'media-block';
+
+    if (ext === 'pdf') {
+        const object = document.createElement('object');
+        object.setAttribute('data', mediaPath);
+        object.setAttribute('type', 'application/pdf');
+        wrapper.appendChild(object);
+
+        const fallback = document.createElement('a');
+        fallback.href = mediaPath;
+        fallback.target = '_blank';
+        fallback.rel = 'noopener noreferrer';
+        fallback.className = 'media-fallback-link';
+        fallback.textContent = 'Open PDF in a new tab';
+        wrapper.appendChild(fallback);
+    } else {
+        const image = document.createElement('img');
+        image.src = mediaPath;
+        image.alt = mediaPath.split('/').pop();
+        wrapper.appendChild(image);
+    }
+
+    container.appendChild(wrapper);
+}
+
+function renderTikzBlock(container, tikzBody) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tikz-block';
+
+    const lowerBody = String(tikzBody || '').toLowerCase();
+    const isArchitectureFlowchart = lowerBody.includes('(pc)')
+        && lowerBody.includes('(rts)')
+        && lowerBody.includes('(plc)');
+
+    if (isArchitectureFlowchart) {
+        wrapper.appendChild(buildArchitectureFlowchartSvg());
+    } else {
+        const pre = document.createElement('div');
+        pre.className = 'raw-tex';
+        pre.textContent = tikzBody;
+        wrapper.appendChild(pre);
+    }
+
+    container.appendChild(wrapper);
+}
+
+function createSvgEl(tag, attrs = {}) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+    for (const key of Object.keys(attrs)) {
+        el.setAttribute(key, String(attrs[key]));
+    }
+    return el;
+}
+
+function addMultilineText(svg, x, y, lines, options = {}) {
+    const text = createSvgEl('text', {
+        x,
+        y,
+        'text-anchor': options.anchor || 'middle',
+        'font-family': options.fontFamily || 'Segoe UI, Tahoma, sans-serif',
+        'font-size': options.fontSize || 14,
+        'font-weight': options.fontWeight || '400',
+        fill: options.fill || '#2c3e50'
+    });
+
+    const lineHeight = options.lineHeight || 18;
+    const startDy = options.startDy || 0;
+
+    for (let i = 0; i < lines.length; i += 1) {
+        const tspan = createSvgEl('tspan', {
+            x,
+            dy: i === 0 ? startDy : lineHeight
+        });
+        tspan.textContent = lines[i];
+        text.appendChild(tspan);
+    }
+
+    svg.appendChild(text);
+    return text;
+}
+
+function addArrow(svg, x1, y1, x2, y2, color = '#2c3e50', width = 2.4) {
+    const line = createSvgEl('line', {
+        x1,
+        y1,
+        x2,
+        y2,
+        stroke: color,
+        'stroke-width': width,
+        'marker-end': 'url(#arrowHead)'
+    });
+    svg.appendChild(line);
+    return line;
+}
+
+function buildArchitectureFlowchartSvg() {
+    const svg = createSvgEl('svg', {
+        viewBox: '0 0 980 440',
+        class: 'flowchart-svg',
+        role: 'img',
+        'aria-label': 'Simulation high-level architecture flow chart'
+    });
+
+    const defs = createSvgEl('defs');
+    const marker = createSvgEl('marker', {
+        id: 'arrowHead',
+        viewBox: '0 0 10 10',
+        refX: 9,
+        refY: 5,
+        markerWidth: 8,
+        markerHeight: 8,
+        orient: 'auto-start-reverse'
+    });
+    const markerPath = createSvgEl('path', {
+        d: 'M 0 0 L 10 5 L 0 10 z',
+        fill: '#2c3e50'
+    });
+    marker.appendChild(markerPath);
+    defs.appendChild(marker);
+    svg.appendChild(defs);
+
+    const pc = { x: 70, y: 120, w: 160, h: 86 };
+    const rts = { x: 305, y: 110, w: 220, h: 106 };
+    const plc = { x: 760, y: 120, w: 150, h: 86 };
+    const a1 = { x: 612, y: 132, w: 24, h: 24 };
+    const a2 = { x: 612, y: 188, w: 24, h: 24 };
+
+    const plant = createSvgEl('rect', {
+        x: 54,
+        y: 94,
+        width: 490,
+        height: 140,
+        fill: 'none',
+        stroke: '#2f8f46',
+        'stroke-width': 1.3,
+        'stroke-dasharray': '6 5',
+        rx: 2
+    });
+    svg.appendChild(plant);
+
+    addMultilineText(svg, 300, 88, ['Plant'], {
+        anchor: 'middle',
+        fontSize: 16,
+        fontStyle: 'italic',
+        fill: '#2f8f46'
+    }).setAttribute('font-style', 'italic');
+
+    for (const node of [pc, rts, plc]) {
+        const rect = createSvgEl('rect', {
+            x: node.x,
+            y: node.y,
+            width: node.w,
+            height: node.h,
+            fill: '#fff',
+            stroke: '#2c3e50',
+            'stroke-width': 1.6,
+            rx: 2
+        });
+        svg.appendChild(rect);
+    }
+
+    addMultilineText(svg, pc.x + pc.w / 2, pc.y + 34, ['PC', 'OFF'], {
+        fontSize: 16,
+        fontWeight: '700',
+        lineHeight: 22
+    });
+    addMultilineText(svg, rts.x + rts.w / 2, rts.y + 28, ['Speedgoat', 'Real-time', 'Simulink'], {
+        fontSize: 16,
+        fontWeight: '700',
+        lineHeight: 22
+    });
+    addMultilineText(svg, plc.x + plc.w / 2, plc.y + 34, ['PLC', 'Beckhoff'], {
+        fontSize: 16,
+        fontWeight: '700',
+        lineHeight: 22
+    });
+
+    for (const sum of [a1, a2]) {
+        const rect = createSvgEl('rect', {
+            x: sum.x,
+            y: sum.y,
+            width: sum.w,
+            height: sum.h,
+            fill: '#fff',
+            stroke: '#2c3e50',
+            'stroke-width': 1.6
+        });
+        svg.appendChild(rect);
+        addMultilineText(svg, sum.x + sum.w / 2, sum.y + 17, ['+'], {
+            fontSize: 18,
+            fontWeight: '700'
+        });
+    }
+
+    const attY = { x: a1.x + a1.w / 2, y: 76 };
+    const attU = { x: a2.x + a2.w / 2, y: 288 };
+    const attackColor = '#c33c3c';
+
+    addMultilineText(svg, attY.x, attY.y, ['a_y'], {
+        fontSize: 18,
+        fill: attackColor,
+        fontWeight: '600'
+    });
+    addMultilineText(svg, attU.x, attU.y, ['a_u'], {
+        fontSize: 18,
+        fill: attackColor,
+        fontWeight: '600'
+    });
+    addArrow(svg, attY.x, attY.y + 8, a1.x + a1.w / 2, a1.y, attackColor, 2.6);
+    addArrow(svg, attU.x, attU.y - 10, a2.x + a2.w / 2, a2.y + a2.h, attackColor, 2.6);
+
+    const topY = 142;
+    addArrow(svg, pc.x + pc.w, topY, rts.x, topY);
+    addArrow(svg, rts.x + rts.w, topY, a1.x, topY);
+    addArrow(svg, a1.x + a1.w, topY, plc.x, topY);
+
+    addMultilineText(svg, (pc.x + pc.w + rts.x) / 2, topY - 10, ['w_{1:N}'], { fontSize: 14 });
+    addMultilineText(svg, (rts.x + rts.w + a1.x) / 2, topY - 10, ['(P, x, w)_{1:N}'], { fontSize: 14 });
+    addMultilineText(svg, (a1.x + a1.w + plc.x) / 2, topY - 10, ['(P, x, w)_{1:N} + a_y'], { fontSize: 14 });
+
+    const bottomY = 194;
+    addArrow(svg, plc.x, bottomY, a2.x + a2.w, bottomY);
+    addArrow(svg, a2.x, bottomY, rts.x + rts.w, bottomY);
+    addArrow(svg, rts.x, bottomY, pc.x + pc.w, bottomY);
+
+    addMultilineText(svg, (plc.x + a2.x + a2.w) / 2, bottomY + 20, ['(P_ref, gamma_ref)_{1:N}'], { fontSize: 14 });
+    addMultilineText(svg, (a2.x + rts.x + rts.w) / 2, bottomY + 20, ['(P_ref, gamma_ref)_{1:N} + a_u'], { fontSize: 14 });
+    addMultilineText(svg, (rts.x + pc.x + pc.w) / 2, bottomY + 20, ['(c_t, c_p, gamma)_{1:N}'], { fontSize: 14 });
+
+    const localController = { x: 250, y: 286, w: 210, h: 64 };
+    const supervisoryController = { x: 520, y: 286, w: 250, h: 64 };
+
+    for (const node of [localController, supervisoryController]) {
+        const rect = createSvgEl('rect', {
+            x: node.x,
+            y: node.y,
+            width: node.w,
+            height: node.h,
+            fill: '#fff',
+            stroke: '#2c3e50',
+            'stroke-width': 1.6,
+            rx: 2
+        });
+        svg.appendChild(rect);
+    }
+
+    addMultilineText(svg, localController.x + localController.w / 2, localController.y + 24, ['Local', 'controller'], {
+        fontSize: 16,
+        fontWeight: '700',
+        lineHeight: 22
+    });
+    addMultilineText(svg, supervisoryController.x + supervisoryController.w / 2, supervisoryController.y + 24, ['Supervisory', 'controller'], {
+        fontSize: 16,
+        fontWeight: '700',
+        lineHeight: 22
+    });
+
+    addArrow(svg, rts.x + rts.w / 2, rts.y + rts.h, localController.x + localController.w / 2, localController.y, '#2c3e50', 2.2);
+    addArrow(svg, plc.x + plc.w / 2, plc.y + plc.h, supervisoryController.x + supervisoryController.w / 2, supervisoryController.y, '#2c3e50', 2.2);
+
+    return svg;
+}
+
+function addParagraph(container, text) {
+    const cleaned = text
+        .replace(/\\section\{([^}]*)\}/g, '$1')
+        .replace(/\\subsection\*?\{([^}]*)\}/g, '$1')
+        .replace(/\\subsubsection\*?\{([^}]*)\}/g, '$1')
+        .replace(/\\noindent/g, '')
+        .replace(/\\textbf\{([^}]*)\}/g, '$1')
+        .trim();
+
+    if (!cleaned) {
+        return;
+    }
+
+    const p = document.createElement('p');
+    p.textContent = cleaned;
+    container.appendChild(p);
+}
+
+function renderTex(tex) {
+    if (!texContent) {
+        return;
+    }
+
+    texContent.innerHTML = '';
+
+    const blockRegex = /\\begin\{(equation|align|tikzpicture)\*?\}([\s\S]*?)\\end\{\1\*?\}|\\includegraphics(?:\[[^\]]*\])?\{([^}]*)\}/g;
+    let lastIndex = 0;
+    let match = null;
+
+    while ((match = blockRegex.exec(tex)) !== null) {
+        const before = tex.slice(lastIndex, match.index);
+        addParagraph(texContent, before);
+
+        if (match[3]) {
+            renderMediaBlock(texContent, match[3]);
+        } else {
+            const blockType = match[1];
+            const blockContent = (match[2] || '').replace(/\\label\{[^}]*\}/g, '').trim();
+
+            if (blockType === 'tikzpicture' && blockContent) {
+                renderTikzBlock(texContent, blockContent);
+            } else if (blockContent) {
+                renderMathBlock(texContent, blockContent);
+            }
+        }
+
+        lastIndex = blockRegex.lastIndex;
+    }
+
+    const remainder = tex.slice(lastIndex);
+    addParagraph(texContent, remainder);
+
+    if (!texContent.innerHTML.trim()) {
+        const pre = document.createElement('div');
+        pre.className = 'raw-tex';
+        pre.textContent = tex;
+        texContent.appendChild(pre);
+    }
+
+}
+
+function loadArchitectureDiagram() {
+    if (!texContent) {
+        return;
+    }
+
+    texContent.innerHTML = '';
+    renderMediaBlock(texContent, ARCHITECTURE_IMAGE_FILE);
+}
+
+async function renderLocalControllerPdfPage() {
+    if (!localControllerPdf || !localControllerPdfDoc) {
+        return;
+    }
+
+    const myToken = ++localControllerRenderToken;
+    const page = await localControllerPdfDoc.getPage(1);
+    if (myToken !== localControllerRenderToken) {
+        return;
+    }
+
+    const targetWidth = Math.max(320, Math.floor(localControllerPdf.clientWidth || 320));
+    const baseViewport = page.getViewport({ scale: 1 });
+    const scale = targetWidth / (baseViewport.width || 1);
+    const viewport = page.getViewport({ scale });
+
+    const pageWrap = document.createElement('div');
+    pageWrap.className = 'pdf-page-wrap';
+    pageWrap.style.height = `${Math.floor(viewport.height)}px`;
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { alpha: false });
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+
+    pageWrap.appendChild(canvas);
+
+    const linkLayer = document.createElement('div');
+    linkLayer.className = 'pdf-link-layer';
+    pageWrap.appendChild(linkLayer);
+
+    localControllerPdf.innerHTML = '';
+    localControllerPdf.appendChild(pageWrap);
+
+    await page.render({ canvasContext: context, viewport }).promise;
+    if (myToken !== localControllerRenderToken) {
+        return;
+    }
+
+    const annotations = await page.getAnnotations();
+    for (const annotation of annotations) {
+        if (annotation.subtype !== 'Link' || !Array.isArray(annotation.rect)) {
+            continue;
+        }
+
+        const url = annotation.url || annotation.unsafeUrl;
+        if (!url) {
+            continue;
+        }
+
+        const rect = viewport.convertToViewportRectangle(annotation.rect);
+        const left = Math.min(rect[0], rect[2]);
+        const top = Math.min(rect[1], rect[3]);
+        const width = Math.abs(rect[2] - rect[0]);
+        const height = Math.abs(rect[3] - rect[1]);
+
+        if (width < 1 || height < 1) {
+            continue;
+        }
+
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.style.left = `${left}px`;
+        anchor.style.top = `${top}px`;
+        anchor.style.width = `${width}px`;
+        anchor.style.height = `${height}px`;
+        anchor.setAttribute('aria-label', 'PDF link');
+        linkLayer.appendChild(anchor);
+    }
+}
+
+async function initLocalControllerPdf() {
+    if (!localControllerPdf) {
+        return;
+    }
+
+    if (!pdfjsLibModule) {
+        try {
+            pdfjsLibModule = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
+        } catch (error) {
+            localControllerPdf.textContent = 'PDF renderer not available.';
+            return;
+        }
+    }
+
+    pdfjsLibModule.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+
+    try {
+        const loadingTask = pdfjsLibModule.getDocument({
+            url: LOCAL_CONTROLLER_PDF_FILE,
+            useSystemFonts: true
+        });
+        localControllerPdfDoc = await loadingTask.promise;
+        await renderLocalControllerPdfPage();
+    } catch (error) {
+        localControllerPdf.textContent = 'Could not render local controller PDF.';
+    }
+}
+
+async function renderSupervisoryControllerPdfPage() {
+    if (!supervisoryControllerPdf || !supervisoryControllerPdfDoc) {
+        return;
+    }
+
+    const myToken = ++supervisoryControllerRenderToken;
+    const page = await supervisoryControllerPdfDoc.getPage(1);
+    if (myToken !== supervisoryControllerRenderToken) {
+        return;
+    }
+
+    const targetWidth = Math.max(320, Math.floor(supervisoryControllerPdf.clientWidth || 320));
+    const baseViewport = page.getViewport({ scale: 1 });
+    const scale = targetWidth / (baseViewport.width || 1);
+    const viewport = page.getViewport({ scale });
+
+    const pageWrap = document.createElement('div');
+    pageWrap.className = 'pdf-page-wrap';
+    pageWrap.style.height = `${Math.floor(viewport.height)}px`;
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { alpha: false });
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+
+    pageWrap.appendChild(canvas);
+
+    const linkLayer = document.createElement('div');
+    linkLayer.className = 'pdf-link-layer';
+    pageWrap.appendChild(linkLayer);
+
+    supervisoryControllerPdf.innerHTML = '';
+    supervisoryControllerPdf.appendChild(pageWrap);
+
+    await page.render({ canvasContext: context, viewport }).promise;
+    if (myToken !== supervisoryControllerRenderToken) {
+        return;
+    }
+
+    const annotations = await page.getAnnotations();
+    for (const annotation of annotations) {
+        if (annotation.subtype !== 'Link' || !Array.isArray(annotation.rect)) {
+            continue;
+        }
+
+        const url = annotation.url || annotation.unsafeUrl;
+        if (!url) {
+            continue;
+        }
+
+        const rect = viewport.convertToViewportRectangle(annotation.rect);
+        const left = Math.min(rect[0], rect[2]);
+        const top = Math.min(rect[1], rect[3]);
+        const width = Math.abs(rect[2] - rect[0]);
+        const height = Math.abs(rect[3] - rect[1]);
+
+        if (width < 1 || height < 1) {
+            continue;
+        }
+
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+        anchor.style.left = `${left}px`;
+        anchor.style.top = `${top}px`;
+        anchor.style.width = `${width}px`;
+        anchor.style.height = `${height}px`;
+        anchor.setAttribute('aria-label', 'PDF link');
+        linkLayer.appendChild(anchor);
+    }
+}
+
+async function initSupervisoryControllerPdf() {
+    if (!supervisoryControllerPdf) {
+        return;
+    }
+
+    if (!pdfjsLibModule) {
+        try {
+            pdfjsLibModule = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
+        } catch (error) {
+            supervisoryControllerPdf.textContent = 'PDF renderer not available.';
+            return;
+        }
+    }
+
+    pdfjsLibModule.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+
+    try {
+        const loadingTask = pdfjsLibModule.getDocument({
+            url: SUPERVISORY_CONTROLLER_PDF_FILE,
+            useSystemFonts: true
+        });
+        supervisoryControllerPdfDoc = await loadingTask.promise;
+        await renderSupervisoryControllerPdfPage();
+    } catch (error) {
+        supervisoryControllerPdf.textContent = 'Could not render supervisory controller PDF.';
+    }
+}
+
+let localControllerResizeTimer = null;
+window.addEventListener('resize', () => {
+    if (!localControllerPdfDoc && !supervisoryControllerPdfDoc) {
+        return;
+    }
+
+    if (localControllerResizeTimer) {
+        window.clearTimeout(localControllerResizeTimer);
+    }
+
+    localControllerResizeTimer = window.setTimeout(() => {
+        const rerenders = [];
+        if (localControllerPdfDoc) {
+            rerenders.push(renderLocalControllerPdfPage().catch(() => {
+                // Keep current rendered page if a resize re-render fails.
+            }));
+        }
+        if (supervisoryControllerPdfDoc) {
+            rerenders.push(renderSupervisoryControllerPdfPage().catch(() => {
+                // Keep current rendered page if a resize re-render fails.
+            }));
+        }
+        Promise.all(rerenders).catch(() => {
+            // Ignore resize re-render errors.
+        });
+    }, 120);
+});
+
+loadArchitectureDiagram();
+initFarmVisualization();
+initLocalControllerPdf();
+initSupervisoryControllerPdf();
+</script>
+</body>
+</html>
+    <header class="site-header">
+        <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
+        <nav class="top-nav" aria-label="Primary">
+            <a href="index.html">Home</a>
+            <a href="qube.html">Inverted Pendulum</a>
+            <a class="active" href="testbed.html">Layered Control</a>
+        </nav>
+    </header>
+

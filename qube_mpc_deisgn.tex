@@ -1,0 +1,144 @@
+\subsection{MPC Design}
+
+With finite horizon N the MPC problem is formulated as the optimization problem to find the optimal input sequence $u_{0:N-1}$
+\begin{align}\label{mpc_def}
+    \mathrm{P_N} : && \min_{\bar u_{N-1} \; \in \; \mathbb{U}} V_N(x_0, u_{0:N-1}) \\
+    & s.t.  & \phi_{N}(x_0, \bar u_{N-1}) \; \in \; \mathbb{X}_f\\
+    &       & g(u_{0:N-1}) \le 0 \\
+    &       & 0 = u_{0:N-1} - K_{0:N-1} x_{0:N-1} \\
+    &       & x(k) \; \in \; \mathbb{X} \; \forall \; k \; \in \mathbb{Z} \; \cup \; [0, N]
+\end{align}
+where $\phi_k$ can be expressed as \autoref{phik_lin} for the linear state feedback case, and \autoref{phi_k_gen} for the general case.  
+\begin{equation} \label{phik_lin}
+    \phi_k(x_0, \bar K_{k-1}) = \left[\prod_{i=0}^{k-1}F - GK_i \right] x_0 
+\end{equation}
+\begin{equation} \label{phi_k_gen}
+    \phi_k(x_0, \bar u_{k-1}) = F^k x_0 + \sum_{i=0}^{k-1} F^{K-1-i} G u_i
+\end{equation}
+The loss function consists of a quadratic stage, or running cost and a quadratic terminal cost \autoref{eq:cost}
+\begin{equation} \label{eq:cost}
+V_N = x_{0:N-1}^\top Q^e_{N-1} x_{0:N-1} + u_{0:N-1}^\top R^e_{N-1} u_{0:N-1} + x_N^\top P_f x_N
+\end{equation}
+where the $x_{0:N-1}, Q_{0:N-1}, R_{0:N-1}$ are defined as
+\begin{align} \label{vec_def}
+& x_{0:N-1} = \left( \begin{matrix}
+    x_0 \\ x_1 \\ x_2 \\ \cdot \cdot \\ x_{N-1}
+\end{matrix}\right) =
+ \left( \begin{matrix}
+    I \\ F-G K_0 \\  (F-G K_1)(F-G K_0) \\ \cdot \cdot\\ \prod_{i=0}^{N-2}(F - G K_i)
+\end{matrix}\right) x_0 \\
+& Q_{0:N-1} = I_{N-1} \otimes Q \\
+& u_{0:N-1} = \left( \begin{matrix}
+    u_0 \\ u_1 \\ u_2 \\ \cdot \cdot \\ u_{N-1}
+\end{matrix}\right) =
+-K_{0:N-1} x_{0:N-1}\\
+& K_{0:N-1} = \mathrm{diag}\left( \begin{matrix}
+    K_0 & K_1 & \cdot \cdot & K_{N-1}
+\end{matrix}\right) \\
+& u_{0:N-1}=- 
+ \left( \begin{matrix}
+    K_0 \\ K_1(F-G K_0) \\  K_2(F-G K_1)(F-G K_0) \\ \cdot \cdot\\ K_{N-1}\prod_{i=0}^{N-2}(F - G K_i)
+\end{matrix}\right) x_0 
+\end{align}
+
+Furthermore $\mathbb{X}$ is the state space and is defined as \autoref{state_space}
+\begin{align}\label{state_space}
+    &&\mathbb{X} = \mathbb{X}_{\dot\theta} \times\mathbb{X}_{\dot\alpha} \times \mathbb{X}_\theta \times \mathbb{X}_\alpha \\
+    & with & \mathbb{X}_\dot\theta  = [-\dot\theta_{max},\dot\theta_{max}] \\
+    && \mathbb{X}_\dot\alpha = [-\dot\alpha_{max},\dot\alpha_{max}] \\
+    && \mathbb{X}_\theta  = [-\theta_{max},\theta_{max}] \\
+    && \mathbb{X}_\alpha = [-\alpha_{max},\alpha_{max}]
+\end{align}
+and $\mathbb{X}_f$ is the terminal set defined in the stability discussion \autoref{sec:stability}
+
+\subsubsection*{Stability} \label{sec:stability}
+MPC incorporates a receding horizon approach, where the finite horizon trajectory is computed at each time step and the first element of the optimal control sequence is applied. The stability of the process can be proven by the stability of the finite horizon trajectory, since the receding horizon solution compounds of the finite horizon results. 
+
+Stability is proven by using Lyapunov functions to bound the evolution of the state. Given the Lyapunov function meets the properties: it is strictly increasing in $x$, it is strictly decreasing in $t = kh$ they prove local stability. Since quadratic expressions are always positive if their weight matrix is by definition positive definite the property is utilized for $Q,R,P_f \succ0$. Therefore the cost function of the form \autoref{eq:cost} meets the first requirement.
+
+The second required property of the cost function over trajectory is divided into two parts: the stage part and the post horizon part. Given during the stage part the control input $K(k)$ is applied. 
+\begin{equation}
+    K(k) = (B^\top \Pi(k+1) G + R )^{-1} G^\top \Pi(k+1)F
+\end{equation}
+where $\Pi(k)$ is given as
+\begin{equation}
+    \Pi(k) = Q + F^\top \Pi(k+1) (F + G K(k))
+\end{equation}
+
+This solution is proven to result in a strictly decreasing $V$ in $t$ for an infinite horizon case, therefore it proves stability given that the tail of the sequence is also stable. 
+
+The stability of the post horizon phase is given for applying a constant control gain $K(N-1)$ and is characterized by the solution to it. For the last step of the horizon the solution to DARE gives the result \autoref{eq:KN-1}.
+\begin{equation} \label{eq:KN-1}
+    K(N-1) = (G^\top P_f G+ R)^{-1}G^\top P_f F
+\end{equation}
+which results in the dynamics
+\begin{equation} \label{terminal_dynamics}
+    x(k+1) = \left(F-G (G^\top P_f G+ R)^{-1}G^\top P_f F\right) x(k)
+\end{equation}
+The evolution of the dynamics is bounded only if $x(k)$ is part of the terminal set defined as \autoref{xf_def}. Here the right side needs to be some constant, it doesn't hold significance as it only scales the entries of $P_f$, therefore it can be chosen to be unit it doesn't restrict the solution space. 
+\begin{equation} \label{xf_def}
+    \mathbb{X}_f:= \;\{x\} \;\forall \; x | \; x^\top P_f x \le 1
+\end{equation}
+Since DARE guarantees the reduction of $x^\top P_f x$ in $t$, $\mathbb{X}_f$ is positive invariant with respect to the dynamics \autoref{terminal_dynamics}, meaning that all possible evolutions of $x$ are contained in $\mathbb{X}_f$. 
+
+However, $\mathbb{X}_f$ needs to be reached within N from the initial state $x_0$, which is not always possible since $u$ is constrained. Thus it creates a requirement on $x_0$: $x_0$ needs to be in  $\mathbb{X}_N$ with \autoref{reach_set_def}
+\begin{equation}\label{reach_set_def}
+    \mathbb{X}_N = \{ x\} \; \forall \; x \; | \exists \; u_{0:N-1} \; s.t. \phi_N(x, u_{0:N-1}) \; \in  \; \mathbb{X}_f
+\end{equation}
+
+Assuming the system is linear the optimal value function can be used as the Lyapunov function, meaning that for stability:
+\begin{equation}
+    V_f(x(k+1)) - V_f(x(k)) \le 0
+\end{equation}
+which can be expanded with the dynamics to an expression of a matrix that needs to be semi negative definite. 
+\begin{equation}
+    (F - G K(N{-}1))^\top P_f (F - G K(N{-}1)) - P_f \preceq 0
+\end{equation}
+
+In order to guarantee asymptotic stability, the reduction in the value function should be lower bounded by a strictly positive function. Since the running cost consists of quadratics with positive semi-definite matrices, with either $Q$ or $R$ having to be non-zero, the running cost can serve as the bounding function for the decrease:
+
+\begin{equation}
+    V_f(x(k{+}1)) - V_f(x(k)) \le -\ell(x(k), u(k))
+\end{equation}
+
+which results in the following matrix inequality that must be negative semi-definite:
+
+\begin{align} \label{stab_condP}
+    (F - G K(N{-}1))^\top P_f (F - G K(N{-}1)) - P_f \\
+    + Q + K(N{-}1)^\top R K(N{-}1) \preceq 0
+\end{align}
+
+
+For the terminal set to comply with the optimization problem \autoref{mpc_def} $\mathbb{X}_f$ needs to meet two additional requirements
+\begin{align} \label{terminal_set_cond}
+    & \mathbb{X}_f \subset \mathbb{X} \\
+    & -K(N-1) x \; \in \; \mathbb{U} \; \forall \;x \; \in \; \mathbb{X}_f
+\end{align}
+Which is reformulated as
+\begin{align}
+    &(-K(N-1) x)_{max} \in \mathbb{U} \; | \;  x \; \in \; \mathbb{X}_f \\
+    &(x_i)_{max}  \in \mathbb{X}_f
+\end{align}
+Since $\mathbb{X}_f$ is a convex set, finding the maximum is analogous to finding the boundary that is orthogonal to the gradient of the optimized function, therefore this can be reformulated as \autoref{opt_cond_pf} where $e_i$ is the i-th directional unit vector and where $P_{f}^{-1}(ii)$ stands for the i-th diagonal entry of the matrix $P_f^{-1}$. 
+\begin{align}\label{opt_cond_pf}
+    -K(N-1) x | \; K(N-1) \perp \partial \mathbb{X}_f =\\ K_{N-1}\sqrt{a}\frac{a P_f^{-1} K_{N-1}^\top}{\sqrt{K_{N-1} P_f^{-1} K_{N-1}^\top}} \\
+     x_i \;|\; e_i \perp \partial \mathbb{X}_f = \sqrt{a P_f^{-1}(i,i)}
+\end{align}
+
+In order to increase the performance of the MPC $\mathbb{X}_f$ needs to be as large as possible, this is formulated as optimizing for the maximum volume of the ellipsoid that defines $\mathbb{X}_f$, which is inversely proportional to the determinant of $P_f$, therefore the determinant of $P_f$ is minimized for in the process. 
+
+There are multiple ways to find $P_f$ such that all constraints are met, but computationally it gets complicated. Finding it through DARE offers a simple computation, where the shape of $P_f$ is first found by \autoref{Pdare}, and then the matrix is scaled such that the terminal set meets the conditions \autoref{terminal_set_cond}. 
+
+\begin{equation} \label{Pdare}
+P_f = F^\top P_f F - F^\top P_f G (R + G^\top P_f G)^{-1} G^\top P_f F + Q
+\end{equation}
+
+The result of this process is visualized for the $\mathbb{X} \in \mathbb{R}^2$ case on \autoref{fig:2d_ellipse}.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1\linewidth]{asstes/2D_ellipse.png}
+    \caption{$P_f$ 2D example}
+    \label{fig:2d_ellipse}
+\end{figure}
+

@@ -29,6 +29,30 @@
             margin-bottom: 60px;
         }
 
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 12px 0 16px;
+            flex-wrap: wrap;
+        }
+
+        .top-nav a {
+            text-decoration: none;
+            color: #2c3e50;
+            background: #fff;
+            border: 1px solid #d7e0e8;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.95em;
+        }
+
+        .top-nav a.active {
+            background: #2c3e50;
+            color: #fff;
+            border-color: #2c3e50;
+        }
+
         .main-title {
             font-size: 3.5em;
             font-style: italic;
@@ -90,6 +114,12 @@
             color: #2c3e50;
             font-style: italic;
             margin-bottom: 18px;
+        }
+
+        .projects-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .project-card {
@@ -173,6 +203,11 @@
     <div class="container">
         <div class="header">
             <h1 class="main-title">Portfolio</h1>
+            <nav class="top-nav" aria-label="Primary">
+                <a class="active" href="index.html">Home</a>
+                <a href="qube.html">Inverted Pendulum</a>
+                <a href="testbed.html">Layered Control</a>
+            </nav>
             <p class="subtitle">Áron Dömötör Kohlhéb</p>
         </div>
 
@@ -190,10 +225,16 @@
 
         <section class="projects-section">
             <h2 class="projects-title">Projects:</h2>
-            <a class="project-card" href="qube.html">
-                <img src="assets\qube_sketch.png" alt="Qube project sketch" class="project-thumb">
-                <p class="project-description">Inverted pendulum modeling, system identification, linear quadratic regulator, and model predictive control, guarantees and implementation.</p>
-            </a>
+            <div class="projects-list">
+                <a class="project-card" href="qube.html">
+                    <img src="assets\qube_sketch.png" alt="Qube project sketch" class="project-thumb">
+                    <p class="project-description">Inverted pendulum modeling, system identification, linear quadratic regulator, and model predictive control, guarantees and implementation.</p>
+                </a>
+                <a class="project-card" href="testbed.html">
+                    <img src="assets/layered_control_placeholder.svg" alt="Layered control placeholder" class="project-thumb">
+                    <p class="project-description">Layered control for wind farm cybersecurity testbeds with real-time hardware-in-the-loop integration, supervisory and local control coordination, and resilient communication architecture.</p>
+                </a>
+            </div>
         </section>
     </div>
 </body>
