@@ -1,0 +1,40 @@
+import numpy as np
+A1 = np.array([[0.626, -0.6975, 0.1],
+               [0.8719, 0.626]])
+
+
+# System matrices for each system
+A1 = np.array([[0.626, -0.6975],
+               [0.8719, 0.626]])
+B1 = np.array([[-0.0748],
+               [0.1744]])
+x01 = np.array([[-10],
+                [-0.5]])
+
+A2 = np.array([[0.626, -0.6975],
+               [0.8719, 0.626]])
+B2 = np.array([[-0.0748],
+               [0.1744]])
+x02 = np.array([[-1],
+                [1]])
+
+A3 = np.array([[0.626, -0.6975],
+               [0.8719, 0.626]])
+B3 = np.array([[-0.0748],
+               [0.1744]])
+x03 = np.array([[2],
+                [0]])
+
+A4 = np.array([[0.626, -0.6975],
+               [0.8719, 0.626]])
+B4 = np.array([[-0.0748],
+               [0.1744]])
+x04 = np.array([[5],
+                [-0.5]])
+
+A_list = [A1, A2, A3, A4]
+B_list = [B1, B2, B3, B4]
+x0_list = [x01, x02, x03, x04]
+# Simulation parameters
+T = 20
+u_max = 7

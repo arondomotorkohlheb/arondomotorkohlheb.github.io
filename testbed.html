@@ -47,6 +47,14 @@ body {
     text-decoration: none;
 }
 
+.site-subtitle {
+    color: #34495e;
+    font-size: 1.8em;
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
 .top-nav {
     display: flex;
     justify-content: center;
@@ -176,6 +184,23 @@ body {
     margin-top: 20px;
     display: flex;
     justify-content: center;
+}
+
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.reports-list a {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.reports-list a:hover {
+    text-decoration: underline;
+    color: #0052a3;
 }
 
 .farm-viz-status {
@@ -330,10 +355,12 @@ body {
 <div class="page">
     <header class="site-header">
         <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
+        <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
         <nav class="top-nav" aria-label="Primary">
             <a href="index.html">Home</a>
             <a href="qube.html">Inverted Pendulum</a>
             <a class="active" href="testbed.html">Layered Control</a>
+            <a href="distributed_control.html">Distributed Control</a>
         </nav>
     </header>
 
@@ -374,6 +401,13 @@ body {
     <section class="content-section" style="margin-top: 18px;">
         <h2 class="section-title">Supervisory Controller</h2>
         <div id="supervisoryControllerPdf" class="pdf-flat-wrap"></div>
+    </section>
+
+    <section class="content-section" style="margin-top: 18px;">
+        <h2 class="section-title">Full report</h2>
+        <div class="reports-list">
+            <a href="assets/testbed/Testbed_and_Layered_Control.pdf" target="_blank" rel="noopener noreferrer">Testbed_and_Layered_Control.pdf</a>
+        </div>
     </section>
 
     <div class="back-nav">
@@ -1736,12 +1770,4 @@ initSupervisoryControllerPdf();
 </script>
 </body>
 </html>
-    <header class="site-header">
-        <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
-        <nav class="top-nav" aria-label="Primary">
-            <a href="index.html">Home</a>
-            <a href="qube.html">Inverted Pendulum</a>
-            <a class="active" href="testbed.html">Layered Control</a>
-        </nav>
-    </header>
 

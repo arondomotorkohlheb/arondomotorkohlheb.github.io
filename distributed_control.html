@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distributed Control</title>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f5f5f5;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-style: italic;
+}
+
+.site-header {
+    text-align: center;
+    margin: 28px auto 10px auto;
+    max-width: 1200px;
+    padding: 0 16px;
+}
+
+.portfolio-title {
+    color: #2c3e50;
+    font-size: 3em;
+    margin-bottom: 8px;
+}
+
+.portfolio-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.site-subtitle {
+    color: #34495e;
+    font-size: 1.8em;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.top-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.top-nav a {
+    text-decoration: none;
+    color: #2c3e50;
+    background: #fff;
+    border: 1px solid #d7e0e8;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 16px;
+}
+
+.top-nav a.active {
+    background: #2c3e50;
+    color: #fff;
+    border-color: #2c3e50;
+}
+
+.headline {
+    color: #2c3e50;
+    font-size: 2.4em;
+    font-weight: 600;
+    margin: 20px auto 10px auto;
+    text-align: center;
+    max-width: 1200px;
+    padding: 0 16px;
+}
+
+.intro-text {
+    color: #555;
+    margin: 0 auto 14px auto;
+    font-size: 18px;
+    max-width: 1000px;
+    text-align: center;
+    padding: 0 16px;
+}
+
+.content-section {
+    margin: 18px auto 24px auto;
+    max-width: 960px;
+    width: calc(100% - 32px);
+    color: #333;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    margin: 10px 0;
+    font-size: 1.8em;
+    color: #2c3e50;
+}
+
+.project-art {
+    width: 100%;
+    max-width: 360px;
+    display: block;
+    margin: 8px auto 16px auto;
+    border-radius: 6px;
+}
+
+.project-description {
+    color: #4b5f73;
+    font-size: 1.08em;
+    line-height: 1.65;
+    text-align: center;
+}
+
+.constraint-equation {
+    color: #2c3e50;
+    text-align: center;
+    font-size: 1.02em;
+    margin: 8px 0 14px;
+}
+
+.solver-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 8px 0 16px;
+}
+
+.solver-button {
+    text-decoration: none;
+    color: #2c3e50;
+    background: #fff;
+    border: 1px solid #d7e0e8;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 16px;
+    cursor: pointer;
+    font-style: italic;
+}
+
+.solver-button:hover {
+    transform: translateY(-1px);
+}
+
+.plot-wrap {
+    width: 100%;
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fafcff;
+}
+
+.plot-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.plot-panel {
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fafcff;
+}
+
+.plot-panel-title {
+    margin: 0;
+    padding: 10px 12px;
+    color: #2c3e50;
+    border-bottom: 1px solid #e1e9f0;
+    font-size: 0.98em;
+    font-style: normal;
+}
+
+.pdf-render-section {
+    padding: 0;
+    overflow: hidden;
+}
+
+.pdf-render-header {
+    padding: 20px 30px 10px;
+}
+
+.pdf-render-header .section-title {
+    margin: 0;
+}
+
+.pdf-flat-wrap {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    overflow: hidden;
+}
+
+.pdf-page-wrap {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
+.pdf-page-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
+#xEvolution3D,
+#xfEvolution3D {
+    width: 100%;
+    height: 520px;
+}
+
+.solver-meta {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin: 14px 0 4px;
+    color: #4b5f73;
+}
+
+.node-grid {
+    display: grid;
+    grid-template-columns: 110px repeat(3, minmax(180px, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+    align-items: center;
+}
+
+.node-card {
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    padding: 12px;
+    background: #fff;
+}
+
+.node-title {
+    font-size: 1.05em;
+    color: #2c3e50;
+    margin-bottom: 6px;
+}
+
+.node-state {
+    color: #34495e;
+    font-size: 0.98em;
+    line-height: 1.45;
+}
+
+.state-col-title {
+    font-size: 1.02em;
+    color: #2c3e50;
+    margin-bottom: 0;
+    font-weight: 600;
+    text-align: center;
+}
+
+.node-state-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.node-state-label {
+    width: 56px;
+    font-size: 0.9em;
+    color: #4b5f73;
+}
+
+.node-state-track {
+    position: relative;
+    flex: 1;
+    height: 3px;
+    background: #d7e0e8;
+    border-radius: 99px;
+}
+
+.node-state-dot {
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid #fff;
+    box-shadow: 0 0 0 1px rgba(44, 62, 80, 0.2);
+    pointer-events: none;
+}
+
+.node-state-value {
+    width: 46px;
+    text-align: right;
+    font-size: 0.85em;
+    color: #4b5f73;
+}
+
+.state-left-header {
+    font-size: 0.92em;
+    color: #6a7b8c;
+    text-align: right;
+    padding-right: 6px;
+}
+
+.state-node-name {
+    color: #2c3e50;
+    font-size: 0.95em;
+    text-align: right;
+    padding-right: 8px;
+}
+
+.state-col-cell {
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    background: #fff;
+    padding: 8px;
+}
+
+.back-nav {
+    margin: 10px auto 40px auto;
+    max-width: 960px;
+    width: calc(100% - 32px);
+    display: flex;
+    justify-content: center;
+}
+
+.back-button {
+    display: inline-block;
+    text-decoration: none;
+    background: #fff;
+    color: #2c3e50;
+    border: 2px solid #fff;
+    border-radius: 6px;
+    padding: 14px 26px;
+    font-size: 22px;
+    transition: transform 0.3s ease;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .headline {
+        font-size: 1.85em;
+    }
+
+    .content-section {
+        padding: 20px;
+    }
+
+    #xEvolution3D,
+    #xfEvolution3D {
+        height: 360px;
+    }
+
+    .plot-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .node-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .state-left-header,
+    .state-node-name {
+        text-align: left;
+        padding-right: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+<header class="site-header">
+    <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
+    <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
+    <nav class="top-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="qube.html">Inverted Pendulum</a>
+        <a href="testbed.html">Layered Control</a>
+        <a class="active" href="distributed_control.html">Distributed Control</a>
+    </nav>
+</header>
+
+<h1 class="headline">Distributed Control</h1>
+<p class="intro-text">Distributed Linear Quadratic Controller with coupling state convergence and constrained inputs.</p>
+
+
+<section class="content-section">
+    <h2 class="section-title">Distributed linear quadratic regulator with state convergence performance</h2>
+    <p class="project-description">
+        The optimization is with respect to the finite horizon LQR with input constraints and terminal constraints, namely that the states have to converge within a finite horizon. 
+    </p>
+    
+    <div class="solver-controls">
+        <button id="solverADMM" class="solver-button" type="button">Alternating Direction Method of Multipliers</button>
+        <button id="solverSubgradient" class="solver-button" type="button">Subgradient Method</button>
+        <button id="solverNesterov" class="solver-button" type="button">Nesterov Method</button>
+        <button id="solverDynAlpha" class="solver-button" type="button">Decayed Update Weight Method</button>
+    </div>
+    <div class="plot-wrap">
+        <div class="plot-grid">
+            <div class="plot-panel">
+                <p class="plot-panel-title">system state evolution </p>
+                <div id="xEvolution3D"></div>
+            </div>
+            <div class="plot-panel">
+                <p class="plot-panel-title"> shared computed terminal state evolution</p>
+                <div id="xfEvolution3D"></div>
+            </div>
+        </div>
+    </div>
+    <div class="solver-meta">
+        <div id="solverResidual">Consensus error: 0.0000</div>
+    </div>
+    <p class="project-description">Interface with the states by dragging.</p>
+    <div id="nodeGrid" class="node-grid"></div>
+</section>
+
+<section class="content-section pdf-render-section">
+    <div class="pdf-render-header">
+        <h2 class="section-title">Derivations</h2>
+    </div>
+    <div id="derivationsPdf" class="pdf-flat-wrap"></div>
+</section>
+
+<div class="back-nav">
+    <a class="back-button" href="index.html">Back to Portfolio</a>
+</div>
+
+<script>
+
+const A1 = [
+    [0.626, -0.6975, 0.4],
+    [0.8719, 0.626, -0.8],
+    [0.3, -0.1, 0.8]
+];
+
+const B1 = [
+    [-0.0748, 0.045],
+    [0.1744, -0.01],
+    [0.1, -0.2]
+];
+
+const x01 = [1, 1, 1];
+
+const A2 = [
+    [0.626, -0.6975, 0.4],
+    [0.8719, 0.626, -0.8],
+    [0.3, -0.1, 0.8]
+];
+
+const B2 = [
+    [-0.0748, 0.045],
+    [0.1744, -0.01],
+    [0.1, -0.2]
+];
+
+const x02 = [-1, 1, 1];
+
+const A3 = [
+    [0.626, -0.6975, 0.4],
+    [0.8719, 0.626, -0.8],
+    [0.3, -0.1, 0.8]
+];
+
+const B3 = [
+    [-0.0748, 0.045],
+    [0.1744, -0.01],
+    [0.1, -0.2]
+];
+
+const x03 = [-1, -1, 1];
+
+const A4 = [
+    [0.626, -0.6975, 0.4],
+    [0.8719, 0.626, -0.8],
+    [0.3, -0.1, 0.8]
+];
+
+const B4 = [
+    [-0.0748, 0.045],
+    [0.1744, -0.01],
+    [0.1, -0.2]
+];
+
+const x04 = [0.4, 0.2, 1];
+
+const AList = [A1, A2, A3, A4];
+const BList = [B1, B2, B3, B4];
+const x0List = [x01, x02, x03, x04];
+
+const INPUT_LIMIT = 0.47;
+const PLOT_MIN = -1.5;
+const PLOT_MAX = 1.5;
+
+const horizonT = 20;
+const uMax = INPUT_LIMIT;
+const renderDelayMs = 160;
+
+const admmRho = 264;
+const subgradientAlpha = 5;
+const nesterovAlpha = 7;
+const nesterovBeta = 0.22;
+const dynamicAlpha0 = 7;
+const dynamicAlphaR = 0.97;
+const lambdaTol = 1e-4;
+const localSolveStep = 0.02;
+const localSolveSteps = 28;
+const nodeQPIterations = 70;
+
+const nodeColors = [
+    0xd62728,
+    0x2ca02c,
+    0x1f77b4,
+    0xff7f0e
+];
+
+const solverADMM = document.getElementById('solverADMM');
+const solverSubgradient = document.getElementById('solverSubgradient');
+const solverNesterov = document.getElementById('solverNesterov');
+const solverDynAlpha = document.getElementById('solverDynAlpha');
+const solverResidual = document.getElementById('solverResidual');
+const nodeGrid = document.getElementById('nodeGrid');
+const xEvolution3D = document.getElementById('xEvolution3D');
+const xfEvolution3D = document.getElementById('xfEvolution3D');
+const derivationsPdf = document.getElementById('derivationsPdf');
+
+const DERIVATIONS_PDF_FILE = 'assets/distributedLQR.pdf';
+
+let animFrame = null;
+let xPanel = null;
+let xfPanel = null;
+
+let solverState = null;
+let isRunning = false;
+let replayTimer = null;
+let activeSolver = 'admm';
+let nodeModels = [];
+let stateUI = [];
+let pdfjsLibModule = null;
+let derivationsPdfDoc = null;
+let derivationsPdfRenderToken = 0;
+let derivationsPdfResizeTimer = null;
+let shouldStopFromTolerance = false;
+
+function vecAdd(a, b) {
+    return a.map((v, i) => v + b[i]);
+}
+
+function vecSub(a, b) {
+    return a.map((v, i) => v - b[i]);
+}
+
+function vecScale(a, s) {
+    return a.map((v) => v * s);
+}
+
+function matMul(A, B) {
+    const rows = A.length;
+    const cols = B[0].length;
+    const inner = B.length;
+    const out = Array.from({ length: rows }, () => Array(cols).fill(0));
+    for (let i = 0; i < rows; i += 1) {
+        for (let k = 0; k < inner; k += 1) {
+            const aik = A[i][k];
+            for (let j = 0; j < cols; j += 1) {
+                out[i][j] += aik * B[k][j];
+            }
+        }
+    }
+    return out;
+}
+
+function matVecMul(A, x) {
+    return A.map((row) => row.reduce((acc, v, i) => acc + v * x[i], 0));
+}
+
+function matPow(A, p) {
+    let out = [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ];
+    for (let i = 0; i < p; i += 1) {
+        out = matMul(out, A);
+    }
+    return out;
+}
+
+function transpose(A) {
+    return A[0].map((_, c) => A.map((row) => row[c]));
+}
+
+function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+}
+
+function applyInputBounds(uVec, uBound) {
+    for (let i = 0; i < uVec.length; i += 1) {
+        uVec[i] = clamp(uVec[i], -uBound, uBound);
+    }
+    return uVec;
+}
+
+function isFiniteVec(v) {
+    for (let i = 0; i < v.length; i += 1) {
+        if (!Number.isFinite(v[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function invert3x3(M) {
+    const a = M[0][0]; const b = M[0][1]; const c = M[0][2];
+    const d = M[1][0]; const e = M[1][1]; const f = M[1][2];
+    const g = M[2][0]; const h = M[2][1]; const i = M[2][2];
+
+    const A = e * i - f * h;
+    const B = -(d * i - f * g);
+    const C = d * h - e * g;
+    const D = -(b * i - c * h);
+    const E = a * i - c * g;
+    const F = -(a * h - b * g);
+    const G = b * f - c * e;
+    const H = -(a * f - c * d);
+    const I = a * e - b * d;
+
+    const det = a * A + b * B + c * C;
+    if (Math.abs(det) < 1e-8) {
+        return null;
+    }
+    const invDet = 1.0 / det;
+    return [
+        [A * invDet, D * invDet, G * invDet],
+        [B * invDet, E * invDet, H * invDet],
+        [C * invDet, F * invDet, I * invDet]
+    ];
+}
+
+function makeTildeB(A, B, T) {
+    const n = 3;
+    const m = 2;
+    const out = Array.from({ length: n }, () => Array(m * T).fill(0));
+    for (let i = 0; i < T; i += 1) {
+        const Ap = matPow(A, T - i - 1);
+        const block = matMul(Ap, B);
+        for (let r = 0; r < n; r += 1) {
+            for (let c = 0; c < m; c += 1) {
+                out[r][i * m + c] = block[r][c];
+            }
+        }
+    }
+    return out;
+}
+
+function makeBarA(A, T) {
+    const n = 3;
+    const out = Array.from({ length: n * T }, () => Array(n).fill(0));
+    for (let i = 0; i < T; i += 1) {
+        const Ap = matPow(A, i + 1);
+        for (let r = 0; r < n; r += 1) {
+            for (let c = 0; c < n; c += 1) {
+                out[i * n + r][c] = Ap[r][c];
+            }
+        }
+    }
+    return out;
+}
+
+function makeBarB(A, B, T) {
+    const n = 3;
+    const m = 2;
+    const out = Array.from({ length: n * T }, () => Array(m * T).fill(0));
+    for (let i = 0; i < T; i += 1) {
+        for (let j = 0; j <= i; j += 1) {
+            const block = matMul(matPow(A, i - j), B);
+            for (let r = 0; r < n; r += 1) {
+                for (let c = 0; c < m; c += 1) {
+                    out[i * n + r][j * m + c] = block[r][c];
+                }
+            }
+        }
+    }
+    return out;
+}
+
+function makeInputWeightBlock(T) {
+    const dim = 2 * T;
+    const R = Array.from({ length: dim }, () => Array(dim).fill(0));
+    for (let t = 0; t < T; t += 1) {
+        R[2 * t][2 * t] = 1;
+        R[2 * t + 1][2 * t + 1] = 0.25;
+    }
+    return R;
+}
+
+function makeTerminalWeight() {
+    return [
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 10]
+    ];
+}
+
+function addMatrices(A, B) {
+    const rows = A.length;
+    const cols = A[0].length;
+    const out = Array.from({ length: rows }, () => Array(cols).fill(0));
+    for (let i = 0; i < rows; i += 1) {
+        for (let j = 0; j < cols; j += 1) {
+            out[i][j] = A[i][j] + B[i][j];
+        }
+    }
+    return out;
+}
+
+function scaleMatrix(A, s) {
+    return A.map((row) => row.map((v) => v * s));
+}
+
+function maxAbsRowSum(A) {
+    let best = 0;
+    for (let i = 0; i < A.length; i += 1) {
+        let s = 0;
+        for (let j = 0; j < A[i].length; j += 1) {
+            s += Math.abs(A[i][j]);
+        }
+        best = Math.max(best, s);
+    }
+    return best;
+}
+
+function precomputeNodeModels() {
+    const T = horizonT;
+    const Rblk = makeInputWeightBlock(T);
+    const Qf = makeTerminalWeight();
+
+    nodeModels = AList.map((A, i) => {
+        const B = BList[i];
+        const x0 = x0List[i];
+        const barA = makeBarA(A, T);
+        const barB = makeBarB(A, B, T);
+        const tildeB = makeTildeB(A, B, T);
+        const xStack0 = matVecMul(barA, x0);
+        const xT0 = matVecMul(matPow(A, T), x0);
+
+        const barBT = transpose(barB);
+        const tBT = transpose(tildeB);
+
+        const term1 = matMul(barBT, barB);
+        const term2 = Rblk;
+        const term3 = matMul(tBT, matMul(Qf, tildeB));
+        const H = scaleMatrix(addMatrices(addMatrices(term1, term2), term3), 2);
+
+        const gState = vecScale(matVecMul(barBT, xStack0), 2);
+        const gTerm = vecScale(matVecMul(tBT, matVecMul(Qf, xT0)), 2);
+        const g0 = vecAdd(gState, gTerm);
+
+        const L = Math.max(1e-6, maxAbsRowSum(H));
+
+        return {
+            x0,
+            tildeB,
+            H,
+            g0,
+            tBT,
+            xT0,
+            uWarm: Array(2 * T).fill(0),
+            step: 1 / (L * 1.1)
+        };
+    });
+}
+
+function solveNodeControlPGD(model, lambdaPlus, lambdaMinus) {
+    const lambdaDiff = vecSub(lambdaPlus, lambdaMinus);
+    const gLambda = matVecMul(model.tBT, lambdaDiff);
+    const g = vecAdd(model.g0, gLambda);
+    let u = model.uWarm.slice();
+
+    for (let k = 0; k < nodeQPIterations; k += 1) {
+        const Hu = matVecMul(model.H, u);
+        const grad = vecAdd(Hu, g);
+        let gradInfNorm = 0;
+        for (let q = 0; q < grad.length; q += 1) {
+            gradInfNorm = Math.max(gradInfNorm, Math.abs(grad[q]));
+        }
+        const stepGrad = vecScale(grad, model.step);
+        u = vecSub(u, stepGrad);
+        u = applyInputBounds(u, uMax);
+        if (gradInfNorm < 1e-5) {
+            break;
+        }
+    }
+
+    model.uWarm = u.slice();
+    return u;
+}
+
+function computeNodeTerminalFromControl(model, u) {
+    return vecAdd(model.xT0, matVecMul(model.tildeB, u));
+}
+
+function simulateLtiTrajectory(A, B, x0, u, T) {
+    const traj = [x0.slice()];
+    let xk = x0.slice();
+    for (let t = 0; t < T; t += 1) {
+        const uk = [u[2 * t] || 0, u[2 * t + 1] || 0];
+        const Ax = matVecMul(A, xk);
+        const Bu = matVecMul(B, uk);
+        xk = vecAdd(Ax, Bu);
+        if (!isFiniteVec(xk)) {
+            xk = [0, 0, 0];
+        }
+        traj.push(xk.slice());
+    }
+    return traj;
+}
+
+function buildPlotDataFromControls(uiArray) {
+    const trajArray = Array.from({ length: AList.length }, () => []);
+    const terminalArray = Array.from({ length: AList.length }, () => [0, 0, 0]);
+
+    for (let i = 0; i < AList.length; i += 1) {
+        const ui = uiArray[i] || Array(2 * horizonT).fill(0);
+        const traj = simulateLtiTrajectory(AList[i], BList[i], x0List[i], ui, horizonT);
+        trajArray[i] = traj;
+        terminalArray[i] = traj[traj.length - 1].slice();
+    }
+
+    return { trajArray, terminalArray };
+}
+
+function makePanel(containerEl) {
+    const panel = {
+        container: containerEl,
+        scene: new THREE.Scene(),
+        camera: new THREE.PerspectiveCamera(48, 1, 0.1, 200),
+        renderer: new THREE.WebGLRenderer({ antialias: true }),
+        nodeSpheres: [],
+        nodeTrails: [],
+        orbitRadius: 4.2,
+        orbitAzimuth: 0.7,
+        orbitPolar: 1.05,
+        orbitDragging: false,
+        lastPointerX: 0,
+        lastPointerY: 0
+    };
+
+    panel.scene.background = new THREE.Color(0xfafcff);
+    panel.renderer.setPixelRatio(window.devicePixelRatio || 1);
+    panel.container.innerHTML = '';
+    panel.container.appendChild(panel.renderer.domElement);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.9);
+    panel.scene.add(ambient);
+
+    const dir = new THREE.DirectionalLight(0xffffff, 0.4);
+    dir.position.set(10, 12, 8);
+    panel.scene.add(dir);
+
+    const axisLength = Math.max(Math.abs(PLOT_MIN), Math.abs(PLOT_MAX));
+    const xAxis = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(-axisLength, 0, 0),
+        new THREE.Vector3(axisLength, 0, 0)
+    ]);
+    const yAxis = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, -axisLength, 0),
+        new THREE.Vector3(0, axisLength, 0)
+    ]);
+    const zAxis = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, -axisLength),
+        new THREE.Vector3(0, 0, axisLength)
+    ]);
+
+    panel.scene.add(new THREE.Line(xAxis, new THREE.LineBasicMaterial({ color: 0x2c3e50 })));
+    panel.scene.add(new THREE.Line(yAxis, new THREE.LineBasicMaterial({ color: 0x2c3e50 })));
+    panel.scene.add(new THREE.Line(zAxis, new THREE.LineBasicMaterial({ color: 0x2c3e50 })));
+
+    for (let i = 0; i < 4; i += 1) {
+        const sphere = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06, 18, 14),
+            new THREE.MeshStandardMaterial({ color: nodeColors[i] })
+        );
+        panel.scene.add(sphere);
+        panel.nodeSpheres.push(sphere);
+
+        const trailGeom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0)]);
+        const trailMat = new THREE.LineBasicMaterial({ color: nodeColors[i] });
+        const trail = new THREE.Line(trailGeom, trailMat);
+        panel.scene.add(trail);
+        panel.nodeTrails.push(trail);
+    }
+
+    panel.renderer.domElement.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) {
+            return;
+        }
+        panel.orbitDragging = true;
+        panel.lastPointerX = event.clientX;
+        panel.lastPointerY = event.clientY;
+        panel.renderer.domElement.setPointerCapture(event.pointerId);
+    });
+
+    panel.renderer.domElement.addEventListener('pointermove', (event) => {
+        if (!panel.orbitDragging) {
+            return;
+        }
+        const dx = event.clientX - panel.lastPointerX;
+        const dy = event.clientY - panel.lastPointerY;
+        panel.lastPointerX = event.clientX;
+        panel.lastPointerY = event.clientY;
+        panel.orbitAzimuth -= dx * 0.005;
+        panel.orbitPolar -= dy * 0.005;
+        updateOrbitCamera(panel);
+    });
+
+    function stopOrbitDrag(event) {
+        if (!panel.orbitDragging) {
+            return;
+        }
+        panel.orbitDragging = false;
+        if (event && typeof event.pointerId === 'number') {
+            panel.renderer.domElement.releasePointerCapture(event.pointerId);
+        }
+    }
+
+    panel.renderer.domElement.addEventListener('pointerup', stopOrbitDrag);
+    panel.renderer.domElement.addEventListener('pointercancel', stopOrbitDrag);
+    panel.renderer.domElement.addEventListener('wheel', (event) => {
+        event.preventDefault();
+        panel.orbitRadius *= 1 + event.deltaY * 0.0012;
+        updateOrbitCamera(panel);
+    }, { passive: false });
+
+    updateOrbitCamera(panel);
+    return panel;
+}
+
+function solveSurrogateUi(A, B, x0, xf, T, uBound) {
+    const m = 2;
+    const Ap = matPow(A, T);
+    const tildeB = makeTildeB(A, B, T);
+    const rhs = vecSub(xf, matVecMul(Ap, x0));
+
+    const BT = transpose(tildeB);
+    const BBT = matMul(tildeB, BT);
+    const eps = 1e-3;
+    for (let j = 0; j < 3; j += 1) {
+        BBT[j][j] += eps;
+    }
+    const invBBT = invert3x3(BBT);
+    const u = Array(m * T).fill(0);
+
+    if (invBBT) {
+        const y = matVecMul(invBBT, rhs);
+        const u0 = matVecMul(BT, y);
+        for (let i = 0; i < u.length; i += 1) {
+            u[i] = u0[i];
+        }
+        applyInputBounds(u, uBound);
+    }
+
+    return u;
+}
+
+function JiXfSurrogate(A, B, x0, T, uBound, xf) {
+    const ui = solveSurrogateUi(A, B, x0, xf, T, uBound);
+    const barA = makeBarA(A, T);
+    const barB = makeBarB(A, B, T);
+    const xStack = vecAdd(matVecMul(barA, x0), matVecMul(barB, ui));
+
+    let xCost = 0;
+    for (let i = 0; i < xStack.length; i += 1) {
+        xCost += xStack[i] * xStack[i];
+    }
+
+    let uCost = 0;
+    for (let i = 0; i < ui.length; i += 1) {
+        uCost += ui[i] * ui[i];
+    }
+
+    let xfReg = 0;
+    for (let i = 0; i < xf.length; i += 1) {
+        xfReg += xf[i] * xf[i];
+    }
+
+    return xCost + uCost + 0.25 * xfReg;
+}
+
+function dJiDxf(A, B, x0, T, uBound, xf, dxf = 0.05) {
+    const g = [0, 0, 0];
+    for (let j = 0; j < 3; j += 1) {
+        const xp = xf.slice();
+        const xm = xf.slice();
+        xp[j] += dxf;
+        xm[j] -= dxf;
+        const jp = JiXfSurrogate(A, B, x0, T, uBound, xp);
+        const jm = JiXfSurrogate(A, B, x0, T, uBound, xm);
+        g[j] = (jp - jm) / (2 * dxf);
+    }
+    return g;
+}
+
+function nodeiXfi(A, B, x0, T, uBound, lambdaI, z, rhoValue, xf) {
+    const nabla = dJiDxf(A, B, x0, T, uBound, xf);
+    const out = [0, 0, 0];
+    for (let i = 0; i < 3; i += 1) {
+        out[i] = z[i] - (nabla[i] + lambdaI[i]) / rhoValue;
+    }
+    return out;
+}
+
+function solveNodeTerminalWithLambda(i, lambdaPlus, lambdaMinus, xInit) {
+    let xf = xInit.slice();
+    for (let k = 0; k < localSolveSteps; k += 1) {
+        const grad = dJiDxf(AList[i], BList[i], x0List[i], horizonT, uMax, xf);
+        const lambdaTerm = vecSub(lambdaPlus, lambdaMinus);
+        const fullGrad = vecAdd(grad, lambdaTerm);
+        xf = vecSub(xf, vecScale(fullGrad, localSolveStep));
+        xf = xf.map((v) => clamp(v, -12, 12));
+    }
+    return xf;
+}
+
+function projectFiniteArray(xfArray) {
+    return xfArray.map((x) => x.map((v) => {
+        if (!Number.isFinite(v)) {
+            return 0;
+        }
+        return clamp(v, -30, 30);
+    }));
+}
+
+function zUpdate(xfArray, lambdaArray, rhoValue) {
+    const z = [0, 0, 0];
+    for (let i = 0; i < xfArray.length; i += 1) {
+        for (let s = 0; s < 3; s += 1) {
+            z[s] += xfArray[i][s] + lambdaArray[i][s] / rhoValue;
+        }
+    }
+    for (let s = 0; s < 3; s += 1) {
+        z[s] /= xfArray.length;
+    }
+    return z;
+}
+
+function lambdaArrayUpdate(lambdaArray, xfArray, z, rhoValue) {
+    const updated = lambdaArray.map((v) => v.slice());
+    for (let i = 0; i < lambdaArray.length; i += 1) {
+        for (let s = 0; s < 3; s += 1) {
+            updated[i][s] = lambdaArray[i][s] + rhoValue * (xfArray[i][s] - z[s]);
+        }
+    }
+    return updated;
+}
+
+function computeConsensusError(xfArray) {
+    let accum = 0;
+    let count = 0;
+    for (let i = 0; i < xfArray.length - 1; i += 1) {
+        const d = vecSub(xfArray[i], xfArray[i + 1]);
+        accum += d[0] * d[0] + d[1] * d[1] + d[2] * d[2];
+        count += 3;
+    }
+    return Math.sqrt(accum / Math.max(1, count));
+}
+
+function lambdaDiffNorm(currentLambda, previousLambda) {
+    let accum = 0;
+    for (let i = 0; i < currentLambda.length; i += 1) {
+        for (let j = 0; j < currentLambda[i].length; j += 1) {
+            const d = currentLambda[i][j] - previousLambda[i][j];
+            accum += d * d;
+        }
+    }
+    return Math.sqrt(accum);
+}
+
+function initSolverState() {
+    const nNodes = AList.length;
+    const z = [0, 0, 0];
+    for (let i = 0; i < nNodes; i += 1) {
+        z[0] += x0List[i][0];
+        z[1] += x0List[i][1];
+        z[2] += x0List[i][2];
+    }
+    z[0] /= nNodes;
+    z[1] /= nNodes;
+    z[2] /= nNodes;
+
+    const lambdaArray = Array.from({ length: nNodes }, () => [1, 1, 1]);
+    const xfArray = x0List.map((x) => x.slice());
+    const uiArray = Array.from({ length: nNodes }, () => Array(2 * horizonT).fill(0));
+    const xCurrentArray = x0List.map((x) => x.slice());
+    const xPathArray = x0List.map((x) => [x.slice()]);
+    const xfPathArray = xfArray.map((x) => [x.slice()]);
+
+    solverState = {
+        iter: 0,
+        z,
+        lambdaArray,
+        yArray: xfArray.map((x) => x.slice()),
+        edgeLambda: Array.from({ length: nNodes - 1 }, () => [1, 1, 1]),
+        edgeY: Array.from({ length: nNodes - 1 }, () => [1, 1, 1]),
+        xfArray,
+        uiArray,
+        xCurrentArray,
+        xPathArray,
+        xfPathArray,
+        history: [xfArray.map((x) => x.slice())]
+    };
+
+    for (let i = 0; i < nodeModels.length; i += 1) {
+        nodeModels[i].uWarm = Array(2 * horizonT).fill(0);
+    }
+}
+
+function admmSingleStep() {
+    const nNodes = AList.length;
+    const xfNew = solverState.xfArray.map((x) => x.slice());
+
+    for (let i = 0; i < nNodes; i += 1) {
+        xfNew[i] = nodeiXfi(
+            AList[i],
+            BList[i],
+            x0List[i],
+            horizonT,
+            uMax,
+            solverState.lambdaArray[i],
+            solverState.z,
+            admmRho,
+            solverState.xfArray[i]
+        );
+    }
+
+    const xfProjected = projectFiniteArray(xfNew);
+    const zNew = zUpdate(xfProjected, solverState.lambdaArray, admmRho);
+    const lambdaNew = lambdaArrayUpdate(solverState.lambdaArray, xfProjected, zNew, admmRho);
+
+    solverState.iter += 1;
+    solverState.xfArray = xfProjected;
+    solverState.z = zNew;
+    solverState.lambdaArray = projectFiniteArray(lambdaNew);
+    solverState.history.push(xfProjected.map((x) => x.slice()));
+}
+
+function lambdaSubgradientStep(alphaValue) {
+    const nNodes = AList.length;
+    const xfNew = Array.from({ length: nNodes }, () => [0, 0, 0]);
+    const uiArray = Array.from({ length: nNodes }, () => Array(2 * horizonT).fill(0));
+    const edgeLambdaPrev = solverState.edgeLambda.map((edge) => edge.slice());
+
+    for (let i = 0; i < nNodes; i += 1) {
+        const lambdaPlus = i < nNodes - 1 ? solverState.edgeLambda[i] : [0, 0, 0];
+        const lambdaMinus = i > 0 ? solverState.edgeLambda[i - 1] : [0, 0, 0];
+        const ui = solveNodeControlPGD(nodeModels[i], lambdaPlus, lambdaMinus);
+        uiArray[i] = ui.slice();
+        xfNew[i] = computeNodeTerminalFromControl(nodeModels[i], ui);
+    }
+
+    const edgeLambdaNew = solverState.edgeLambda.map((edge) => edge.slice());
+    for (let i = 0; i < nNodes - 1; i += 1) {
+        const v = vecSub(xfNew[i], xfNew[i + 1]);
+        edgeLambdaNew[i] = vecAdd(solverState.edgeLambda[i], vecScale(v, alphaValue));
+    }
+
+    const projected = projectFiniteArray(xfNew);
+    solverState.iter += 1;
+    solverState.xfArray = projected;
+    solverState.edgeLambda = projectFiniteArray(edgeLambdaNew);
+    solverState.history.push(projected.map((x) => x.slice()));
+    shouldStopFromTolerance = lambdaDiffNorm(solverState.edgeLambda, edgeLambdaPrev) < lambdaTol;
+}
+
+function nesterovSingleStep() {
+    const nNodes = AList.length;
+    const xfNew = Array.from({ length: nNodes }, () => [0, 0, 0]);
+    const uiArray = Array.from({ length: nNodes }, () => Array(2 * horizonT).fill(0));
+    const edgeLambdaPrev = solverState.edgeLambda.map((edge) => edge.slice());
+    for (let i = 0; i < nNodes; i += 1) {
+        const lambdaPlus = i < nNodes - 1 ? solverState.edgeLambda[i] : [0, 0, 0];
+        const lambdaMinus = i > 0 ? solverState.edgeLambda[i - 1] : [0, 0, 0];
+        const ui = solveNodeControlPGD(nodeModels[i], lambdaPlus, lambdaMinus);
+        uiArray[i] = ui.slice();
+        xfNew[i] = computeNodeTerminalFromControl(nodeModels[i], ui);
+    }
+
+    const lambdasNew = solverState.edgeLambda.map((edge) => edge.slice());
+    for (let i = 0; i < nNodes - 1; i += 1) {
+        const v = vecSub(xfNew[i], xfNew[i + 1]);
+        lambdasNew[i] = vecAdd(solverState.edgeY[i], vecScale(v, nesterovAlpha));
+    }
+
+    const yNew = solverState.edgeY.map((edge) => edge.slice());
+    for (let i = 0; i < nNodes - 1; i += 1) {
+        const momentum = vecSub(lambdasNew[i], solverState.edgeLambda[i]);
+        yNew[i] = vecAdd(lambdasNew[i], vecScale(momentum, nesterovBeta));
+    }
+
+    const xProjected = projectFiniteArray(xfNew);
+
+    solverState.iter += 1;
+    solverState.xfArray = xProjected;
+    solverState.edgeLambda = projectFiniteArray(lambdasNew);
+    solverState.edgeY = projectFiniteArray(yNew);
+    solverState.history.push(xProjected.map((x) => x.slice()));
+    shouldStopFromTolerance = lambdaDiffNorm(solverState.edgeLambda, edgeLambdaPrev) < lambdaTol;
+}
+
+function advanceLtiStatesFromCurrentXf() {
+    const nNodes = AList.length;
+    for (let i = 0; i < nNodes; i += 1) {
+        const xCurrent = solverState.xCurrentArray[i];
+        const xfCurrent = solverState.xfArray[i];
+        const ui = solveSurrogateUi(AList[i], BList[i], xCurrent, xfCurrent, horizonT, uMax);
+        solverState.uiArray[i] = ui.slice();
+
+        const u0 = [ui[0] || 0, ui[1] || 0];
+        let xNext = vecAdd(matVecMul(AList[i], xCurrent), matVecMul(BList[i], u0));
+        if (!isFiniteVec(xNext)) {
+            xNext = [0, 0, 0];
+        }
+        xNext = xNext.map((v) => clamp(v, -30, 30));
+        solverState.xCurrentArray[i] = xNext;
+        solverState.xPathArray[i].push(xNext.slice());
+        solverState.xfPathArray[i].push(xfCurrent.slice());
+    }
+}
+
+function dynamicAlphaSingleStep() {
+    const alphaK = dynamicAlpha0 * Math.pow(dynamicAlphaR, solverState.iter);
+    lambdaSubgradientStep(alphaK);
+}
+
+function solverSingleStep() {
+    if (activeSolver === 'admm') {
+        admmSingleStep();
+    } else if (activeSolver === 'subgradient') {
+        lambdaSubgradientStep(subgradientAlpha);
+    } else if (activeSolver === 'nesterov') {
+        nesterovSingleStep();
+    } else {
+        dynamicAlphaSingleStep();
+    }
+    advanceLtiStatesFromCurrentXf();
+}
+
+function updateOrbitCamera(panel) {
+    panel.orbitPolar = clamp(panel.orbitPolar, 0.08, Math.PI - 0.08);
+    panel.orbitRadius = clamp(panel.orbitRadius, 2.2, 10);
+    const cp = Math.cos(panel.orbitPolar);
+    const sp = Math.sin(panel.orbitPolar);
+    panel.camera.position.set(
+        panel.orbitRadius * sp * Math.sin(panel.orbitAzimuth),
+        panel.orbitRadius * cp,
+        panel.orbitRadius * sp * Math.cos(panel.orbitAzimuth)
+    );
+    panel.camera.lookAt(0, 0, 0);
+}
+
+function setupScene() {
+    xPanel = makePanel(xEvolution3D);
+    xfPanel = makePanel(xfEvolution3D);
+    fitRenderer();
+}
+
+function fitRenderer() {
+    [xPanel, xfPanel].forEach((panel) => {
+        if (!panel) {
+            return;
+        }
+        const w = Math.max(280, panel.container.clientWidth);
+        const h = Math.max(240, panel.container.clientHeight);
+        panel.camera.aspect = w / h;
+        panel.camera.updateProjectionMatrix();
+        panel.renderer.setSize(w, h, false);
+    });
+}
+
+async function renderDerivationsPdfPages() {
+    if (!derivationsPdf || !derivationsPdfDoc) {
+        return;
+    }
+
+    const myToken = ++derivationsPdfRenderToken;
+    const targetWidth = Math.max(320, Math.floor(derivationsPdf.clientWidth || 320));
+    derivationsPdf.innerHTML = '';
+
+    for (let pageNumber = 1; pageNumber <= derivationsPdfDoc.numPages; pageNumber += 1) {
+        const page = await derivationsPdfDoc.getPage(pageNumber);
+        if (myToken !== derivationsPdfRenderToken) {
+            return;
+        }
+
+        const baseViewport = page.getViewport({ scale: 1 });
+        const scale = targetWidth / (baseViewport.width || 1);
+        const viewport = page.getViewport({ scale });
+
+        const pageWrap = document.createElement('div');
+        pageWrap.className = 'pdf-page-wrap';
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d', { alpha: false });
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+
+        pageWrap.appendChild(canvas);
+        derivationsPdf.appendChild(pageWrap);
+
+        await page.render({ canvasContext: context, viewport }).promise;
+        if (myToken !== derivationsPdfRenderToken) {
+            return;
+        }
+    }
+}
+
+async function initDerivationsPdf() {
+    if (!derivationsPdf) {
+        return;
+    }
+
+    if (!pdfjsLibModule) {
+        try {
+            pdfjsLibModule = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
+        } catch (error) {
+            derivationsPdf.textContent = 'PDF renderer not available.';
+            return;
+        }
+    }
+
+    pdfjsLibModule.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+
+    try {
+        const loadingTask = pdfjsLibModule.getDocument({
+            url: DERIVATIONS_PDF_FILE,
+            useSystemFonts: true
+        });
+        derivationsPdfDoc = await loadingTask.promise;
+        await renderDerivationsPdfPages();
+    } catch (error) {
+        derivationsPdf.textContent = 'Could not render derivations PDF.';
+    }
+}
+
+function applyDraggedValue(node, component, value) {
+    if (!solverState) {
+        return;
+    }
+    const clamped = clamp(value, PLOT_MIN, PLOT_MAX);
+    solverState.xCurrentArray[node][component] = clamped;
+    if (solverState.xPathArray[node].length > 0) {
+        solverState.xPathArray[node][solverState.xPathArray[node].length - 1] = solverState.xCurrentArray[node].slice();
+    }
+    updatePlot();
+}
+
+function makeDraggableTrack(track, node, component) {
+    function valueFromPointer(event) {
+        const rect = track.getBoundingClientRect();
+        const width = Math.max(1, rect.width);
+        const ratio = clamp((event.clientX - rect.left) / width, 0, 1);
+        return PLOT_MIN + ratio * (PLOT_MAX - PLOT_MIN);
+    }
+
+    track.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        track.setPointerCapture(event.pointerId);
+        applyDraggedValue(node, component, valueFromPointer(event));
+    });
+
+    track.addEventListener('pointermove', (event) => {
+        if (!track.hasPointerCapture(event.pointerId)) {
+            return;
+        }
+        applyDraggedValue(node, component, valueFromPointer(event));
+    });
+
+    track.addEventListener('pointerup', (event) => {
+        if (track.hasPointerCapture(event.pointerId)) {
+            track.releasePointerCapture(event.pointerId);
+        }
+    });
+
+    track.addEventListener('pointercancel', (event) => {
+        if (track.hasPointerCapture(event.pointerId)) {
+            track.releasePointerCapture(event.pointerId);
+        }
+    });
+}
+
+function buildNodeGridUI() {
+    const componentNames = ['x', 'y', 'z'];
+    nodeGrid.innerHTML = '';
+    stateUI = Array.from({ length: 4 }, () => Array.from({ length: 3 }, () => null));
+
+    const leftHeader = document.createElement('div');
+    leftHeader.className = 'state-left-header';
+    leftHeader.textContent = 'Node';
+    nodeGrid.appendChild(leftHeader);
+
+    for (let component = 0; component < 3; component += 1) {
+        const colHeader = document.createElement('div');
+        colHeader.className = 'state-col-title';
+        colHeader.textContent = componentNames[component];
+        nodeGrid.appendChild(colHeader);
+    }
+
+    for (let node = 0; node < 4; node += 1) {
+        const nodeName = document.createElement('div');
+        nodeName.className = 'state-node-name';
+        nodeName.textContent = `Node ${node + 1}`;
+        nodeName.style.color = `#${nodeColors[node].toString(16).padStart(6, '0')}`;
+        nodeGrid.appendChild(nodeName);
+
+        for (let component = 0; component < 3; component += 1) {
+            const cell = document.createElement('div');
+            cell.className = 'state-col-cell';
+
+            const row = document.createElement('div');
+            row.className = 'node-state-row';
+
+            const track = document.createElement('div');
+            track.className = 'node-state-track';
+            track.style.background = `linear-gradient(90deg, rgba(44,62,80,0.15), rgba(44,62,80,0.08))`;
+
+            const dot = document.createElement('div');
+            dot.className = 'node-state-dot';
+            dot.style.background = `#${nodeColors[node].toString(16).padStart(6, '0')}`;
+            track.appendChild(dot);
+
+            const valueText = document.createElement('div');
+            valueText.className = 'node-state-value';
+            valueText.textContent = '0.00';
+
+            makeDraggableTrack(track, node, component);
+
+            row.appendChild(track);
+            row.appendChild(valueText);
+            cell.appendChild(row);
+            nodeGrid.appendChild(cell);
+
+            stateUI[node][component] = { dot, valueText };
+        }
+    }
+}
+
+function updateNodeGridValues() {
+    if (!solverState || !stateUI.length) {
+        return;
+    }
+
+    const stateForUI = solverState.xCurrentArray;
+
+    for (let node = 0; node < stateForUI.length; node += 1) {
+        for (let component = 0; component < 3; component += 1) {
+            const value = stateForUI[node][component];
+            const ui = stateUI[node][component];
+            if (!ui) {
+                continue;
+            }
+            ui.dot.style.left = `${((clamp(value, PLOT_MIN, PLOT_MAX) - PLOT_MIN) / (PLOT_MAX - PLOT_MIN)) * 100}%`;
+            ui.valueText.textContent = value.toFixed(2);
+        }
+    }
+}
+
+function updateSolverMeta() {
+    const err = computeConsensusError(solverState.xfArray);
+    solverResidual.textContent = `Consensus error: ${err.toFixed(4)}`;
+}
+
+function updatePlot() {
+    if (!solverState.xPathArray || !solverState.xfPathArray || !xPanel || !xfPanel) {
+        return;
+    }
+
+    for (let i = 0; i < AList.length; i += 1) {
+        const xPoints = (solverState.xPathArray[i] || []).map((x) => new THREE.Vector3(
+            clamp(x[0], PLOT_MIN, PLOT_MAX),
+            clamp(x[1], PLOT_MIN, PLOT_MAX),
+            clamp(x[2], PLOT_MIN, PLOT_MAX)
+        ));
+        const xfPoints = (solverState.xfPathArray[i] || []).map((x) => new THREE.Vector3(
+            clamp(x[0], PLOT_MIN, PLOT_MAX),
+            clamp(x[1], PLOT_MIN, PLOT_MAX),
+            clamp(x[2], PLOT_MIN, PLOT_MAX)
+        ));
+
+        if (!xPoints.length || !xfPoints.length) {
+            continue;
+        }
+
+        xPanel.nodeSpheres[i].position.copy(xPoints[xPoints.length - 1]);
+        xfPanel.nodeSpheres[i].position.copy(xfPoints[xfPoints.length - 1]);
+
+        const xGeom = new THREE.BufferGeometry().setFromPoints(xPoints);
+        xPanel.nodeTrails[i].geometry.dispose();
+        xPanel.nodeTrails[i].geometry = xGeom;
+
+        const xfGeom = new THREE.BufferGeometry().setFromPoints(xfPoints);
+        xfPanel.nodeTrails[i].geometry.dispose();
+        xfPanel.nodeTrails[i].geometry = xfGeom;
+    }
+
+    updateSolverMeta();
+    updateNodeGridValues();
+}
+
+function markActiveSolverButton() {
+    const buttonMap = {
+        admm: solverADMM,
+        subgradient: solverSubgradient,
+        nesterov: solverNesterov,
+        dynalpha: solverDynAlpha
+    };
+    Object.entries(buttonMap).forEach(([key, button]) => {
+        if (!button) {
+            return;
+        }
+        if (key === activeSolver) {
+            button.style.background = '#2c3e50';
+            button.style.color = '#fff';
+            button.style.borderColor = '#2c3e50';
+        } else {
+            button.style.background = '#fff';
+            button.style.color = '#2c3e50';
+            button.style.borderColor = '#d7e0e8';
+        }
+    });
+}
+
+function resetSimulation() {
+    if (replayTimer) {
+        window.clearTimeout(replayTimer);
+        replayTimer = null;
+    }
+    isRunning = false;
+    shouldStopFromTolerance = false;
+
+    initSolverState();
+    updatePlot();
+    markActiveSolverButton();
+}
+
+function runAnimatedStep() {
+    if (!isRunning) {
+        return;
+    }
+
+    solverSingleStep();
+    updatePlot();
+
+    replayTimer = window.setTimeout(runAnimatedStep, renderDelayMs);
+}
+
+function animateScene() {
+    animFrame = requestAnimationFrame(animateScene);
+    if (xPanel) {
+        xPanel.renderer.render(xPanel.scene, xPanel.camera);
+    }
+    if (xfPanel) {
+        xfPanel.renderer.render(xfPanel.scene, xfPanel.camera);
+    }
+}
+
+function selectSolverAndRun(solverName) {
+    activeSolver = solverName;
+    resetSimulation();
+    isRunning = true;
+    runAnimatedStep();
+}
+
+solverADMM.addEventListener('click', () => {
+    selectSolverAndRun('admm');
+});
+
+solverSubgradient.addEventListener('click', () => {
+    selectSolverAndRun('subgradient');
+});
+
+solverNesterov.addEventListener('click', () => {
+    selectSolverAndRun('nesterov');
+});
+
+solverDynAlpha.addEventListener('click', () => {
+    selectSolverAndRun('dynalpha');
+});
+
+window.addEventListener('resize', fitRenderer);
+window.addEventListener('resize', () => {
+    if (!derivationsPdfDoc) {
+        return;
+    }
+
+    if (derivationsPdfResizeTimer) {
+        window.clearTimeout(derivationsPdfResizeTimer);
+    }
+
+    derivationsPdfResizeTimer = window.setTimeout(() => {
+        renderDerivationsPdfPages().catch(() => {
+            // Keep currently rendered pages if resize render fails.
+        });
+    }, 120);
+});
+
+setupScene();
+precomputeNodeModels();
+buildNodeGridUI();
+resetSimulation();
+selectSolverAndRun('admm');
+initDerivationsPdf();
+animateScene();
+</script>
+</body>
+</html>

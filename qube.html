@@ -44,6 +44,14 @@ body {
     text-decoration: none;
 }
 
+.site-subtitle {
+    color:#34495e;
+    font-size:1.8em;
+    font-style: italic;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
 .top-nav {
     display:flex;
     justify-content:center;
@@ -256,6 +264,27 @@ body {
     border-radius: 6px;
     margin: 12px 0;
 }
+.pdf-flat-wrap {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    overflow: hidden;
+}
+.pdf-page-wrap {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+.pdf-page-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
 .back-nav {
     margin: 10px auto 40px auto;
     max-width: 960px;
@@ -285,10 +314,12 @@ body {
 
 <header class="site-header">
     <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
+    <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
     <nav class="top-nav" aria-label="Primary">
         <a href="index.html">Home</a>
         <a class="active" href="qube.html">Inverted Pendulum</a>
         <a href="testbed.html">Layered Control</a>
+        <a href="distributed_control.html">Distributed Control</a>
     </nav>
 </header>
 
@@ -344,7 +375,12 @@ body {
 </section>
 
 <section class="content-section">
-    <h2 class="section-title">Reports</h2>
+    <h2 class="section-title">Model Predictive Control</h2>
+    <div id="mpcDesignPdf" class="pdf-flat-wrap"></div>
+</section>
+
+<section class="content-section">
+    <h2 class="section-title">Full Reports</h2>
     <div class="reports-list">
         <a href="model_predictive_control.pdf" target="_blank" rel="noopener noreferrer">model_predictive_control.pdf</a>
         <a href="Implementation.pdf" target="_blank" rel="noopener noreferrer">Implementation.pdf</a>
@@ -374,6 +410,12 @@ const phaseCtx = phaseCanvas.getContext("2d");
 const implementationVideo = document.getElementById("implementationVideo");
 const videoFallback = document.getElementById("videoFallback");
 const modelContent = document.getElementById("modelContent");
+const mpcDesignPdf = document.getElementById('mpcDesignPdf');
+const MPC_DESIGN_PDF_FILE = 'assets/MPCdesign.pdf';
+
+let mpcDesignPdfDoc = null;
+let mpcDesignPdfRenderToken = 0;
+let pdfjsLibModule = null;
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 
@@ -490,7 +532,67 @@ async function loadModelTex() {
     }
 }
 
+async function renderMpcDesignPdfPage() {
+    if (!mpcDesignPdf || !mpcDesignPdfDoc) {
+        return;
+    }
+
+    const myToken = ++mpcDesignPdfRenderToken;
+    const page = await mpcDesignPdfDoc.getPage(1);
+    if (myToken !== mpcDesignPdfRenderToken) {
+        return;
+    }
+
+    const targetWidth = Math.max(320, Math.floor(mpcDesignPdf.clientWidth || 320));
+    const baseViewport = page.getViewport({ scale: 1 });
+    const scale = targetWidth / (baseViewport.width || 1);
+    const viewport = page.getViewport({ scale });
+
+    const pageWrap = document.createElement('div');
+    pageWrap.className = 'pdf-page-wrap';
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d', { alpha: false });
+    canvas.width = Math.floor(viewport.width);
+    canvas.height = Math.floor(viewport.height);
+
+    pageWrap.appendChild(canvas);
+    mpcDesignPdf.innerHTML = '';
+    mpcDesignPdf.appendChild(pageWrap);
+
+    await page.render({ canvasContext: context, viewport }).promise;
+}
+
+async function initMpcDesignPdf() {
+    if (!mpcDesignPdf) {
+        return;
+    }
+
+    if (!pdfjsLibModule) {
+        try {
+            pdfjsLibModule = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
+        } catch (error) {
+            mpcDesignPdf.textContent = 'PDF renderer not available.';
+            return;
+        }
+    }
+
+    pdfjsLibModule.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+
+    try {
+        const loadingTask = pdfjsLibModule.getDocument({
+            url: MPC_DESIGN_PDF_FILE,
+            useSystemFonts: true
+        });
+        mpcDesignPdfDoc = await loadingTask.promise;
+        await renderMpcDesignPdfPage();
+    } catch (error) {
+        mpcDesignPdf.textContent = 'Could not render MPC design PDF.';
+    }
+}
+
 loadModelTex();
+initMpcDesignPdf();
 
 camera.aspect = renderPanel.clientWidth / renderPanel.clientHeight;
 camera.updateProjectionMatrix();
@@ -1016,6 +1118,23 @@ window.addEventListener("resize", ()=>{
     camera.aspect = renderPanel.clientWidth/renderPanel.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(renderPanel.clientWidth, renderPanel.clientHeight);
+});
+
+let mpcPdfResizeTimer = null;
+window.addEventListener('resize', () => {
+    if (!mpcDesignPdfDoc) {
+        return;
+    }
+
+    if (mpcPdfResizeTimer) {
+        window.clearTimeout(mpcPdfResizeTimer);
+    }
+
+    mpcPdfResizeTimer = window.setTimeout(() => {
+        renderMpcDesignPdfPage().catch(() => {
+            // Keep current rendered page if a resize re-render fails.
+        });
+    }, 120);
 });
 </script>
 
