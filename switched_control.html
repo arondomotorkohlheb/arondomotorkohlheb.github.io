@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Switched Control</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f5f5f5;
+    color: #333;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-style: italic;
+}
+
+.site-header {
+    text-align: center;
+    margin: 28px auto 10px auto;
+    max-width: 1200px;
+    padding: 0 16px;
+}
+
+.portfolio-title {
+    color: #2c3e50;
+    font-size: 3em;
+    margin-bottom: 8px;
+}
+
+.portfolio-title a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.site-subtitle {
+    color: #34495e;
+    font-size: 1.8em;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.top-nav {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.top-nav a {
+    text-decoration: none;
+    color: #2c3e50;
+    background: #fff;
+    border: 1px solid #d7e0e8;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 16px;
+}
+
+.top-nav a.active {
+    background: #2c3e50;
+    color: #fff;
+    border-color: #2c3e50;
+}
+
+.headline {
+    color: #2c3e50;
+    font-size: 2.4em;
+    font-weight: 600;
+    margin: 20px auto 10px auto;
+    text-align: center;
+    max-width: 1200px;
+    padding: 0 16px;
+}
+
+.intro-text {
+    color: #555;
+    margin: 0 auto 14px auto;
+    font-size: 18px;
+    max-width: 1000px;
+    text-align: center;
+    padding: 0 16px;
+}
+
+.content-section {
+    margin: 18px auto 24px auto;
+    max-width: 960px;
+    width: calc(100% - 32px);
+    color: #333;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    margin: 10px 0;
+    font-size: 1.8em;
+    color: #2c3e50;
+}
+
+.project-description {
+    color: #4b5f73;
+    font-size: 1.08em;
+    line-height: 1.65;
+    text-align: center;
+}
+
+.temp-dashboard {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 70px;
+    gap: 14px;
+    align-items: stretch;
+}
+
+.temp-plot-wrap {
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    background: #fafcff;
+    overflow: hidden;
+    min-height: 380px;
+}
+
+#temperatureCanvas {
+    width: 100%;
+    height: 380px;
+    display: block;
+}
+
+.temperature-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding: 10px 12px 12px;
+    border-top: 1px solid #e1e9f0;
+    background: #fff;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #4b5f73;
+    font-size: 0.9em;
+}
+
+.legend-line {
+    width: 22px;
+    height: 0;
+    border-top: 3px solid #2c3e50;
+}
+
+.legend-line.room {
+    border-top-color: #d62728;
+}
+
+.legend-line.radiator {
+    border-top-color: rgba(31, 119, 180, 0.5);
+    border-top-style: dashed;
+}
+
+.legend-line.boiler {
+    border-top-color: rgba(255, 127, 14, 0.5);
+    border-top-style: dashed;
+}
+
+.legend-line.external {
+    border-top-color: #2ca02c;
+}
+
+.legend-line.target {
+    border-top-color: #2c3e50;
+    border-top-style: dashed;
+}
+
+.ambient-control {
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    background: #fafcff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 8px;
+    gap: 12px;
+}
+
+.ambient-control-label {
+    font-size: 0.9em;
+    color: #4b5f73;
+    text-align: center;
+}
+
+.ambient-rail {
+    position: relative;
+    width: 30px;
+    height: 260px;
+    background: transparent;
+    border-radius: 99px;
+    cursor: ns-resize;
+    touch-action: none;
+}
+
+.ambient-rail::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    transform: translateX(-50%);
+    background: #c7d4e0;
+    border-radius: 99px;
+}
+
+.ambient-handle {
+    position: absolute;
+    left: 50%;
+    width: 30px;
+    height: 10px;
+    border-radius: 2px;
+    background: #2c3e50;
+    border: 1px solid #fff;
+    box-shadow: 0 0 0 1px rgba(44, 62, 80, 0.2);
+    transform: translate(-50%, 50%);
+    pointer-events: none;
+}
+
+.ambient-value {
+    font-size: 0.92em;
+    color: #2c3e50;
+    text-align: center;
+    line-height: 1.3;
+}
+
+.sim-meta {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(200px, 1fr));
+    gap: 8px;
+}
+
+.controller-graph-wrap {
+    margin-top: 14px;
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    background: #fafcff;
+    overflow: hidden;
+}
+
+#controllerGraphCanvas {
+    width: 100%;
+    height: 430px;
+    display: block;
+}
+
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.reports-list a {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.reports-list a:hover {
+    text-decoration: underline;
+    color: #0052a3;
+}
+
+.meta-chip {
+    border: 1px solid #e1e9f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: #4b5f73;
+    background: #fff;
+    text-align: center;
+    font-size: 0.95em;
+}
+
+.back-nav {
+    margin: 10px auto 40px auto;
+    max-width: 960px;
+    width: calc(100% - 32px);
+    display: flex;
+    justify-content: center;
+}
+
+.back-button {
+    display: inline-block;
+    text-decoration: none;
+    background: #fff;
+    color: #2c3e50;
+    border: 2px solid #fff;
+    border-radius: 6px;
+    padding: 14px 26px;
+    font-size: 22px;
+    transition: transform 0.3s ease;
+}
+
+.back-button:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .headline {
+        font-size: 1.85em;
+    }
+
+    .content-section {
+        padding: 20px;
+    }
+
+    .temp-dashboard {
+        grid-template-columns: 1fr;
+    }
+
+    .ambient-control {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .ambient-rail {
+        height: 180px;
+    }
+
+    .sim-meta {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+<header class="site-header">
+    <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
+    <p class="site-subtitle">Aron Domotor Kohlheb</p>
+    <nav class="top-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="qube.html">Inverted Pendulum</a>
+        <a href="testbed.html">Layered Control</a>
+        <a href="distributed_control.html">Distributed Control</a>
+        <a class="active" href="switched_control.html">Switched Control</a>
+    </nav>
+</header>
+
+<h1 class="headline">Switched Control</h1>
+<p class="intro-text">The heating system is modeled by the dynamics of the boiler, radiator and room temperature,
+    and changes with respect to how uch the window is open. The window is actuated by a hydraulic arm. 
+    Both heating and the hydraulics are controlled by switched control, therefore the system inhibits switched system dynamics, 
+    and the dynamics and controller is described with an automaton. 
+</p>
+
+<section class="content-section">
+    <h2 class="section-title">Real Time Dynamics with Interactive External Temperature</h2>
+    <p class="project-description"></p>
+
+    <div class="temp-dashboard">
+        <div class="temp-plot-wrap">
+            <canvas id="temperatureCanvas" width="900" height="380"></canvas>
+            <div id="temperatureLegend" class="temperature-legend">
+                <div class="legend-item"><span class="legend-line room"></span><span>T_room</span></div>
+                <div class="legend-item"><span class="legend-line radiator"></span><span>T_radiator</span></div>
+                <div class="legend-item"><span class="legend-line boiler"></span><span>T_boiler</span></div>
+                <div class="legend-item"><span class="legend-line external"></span><span>T_external</span></div>
+                <div class="legend-item"><span class="legend-line target"></span><span>target room temperature</span></div>
+            </div>
+        </div>
+        <div class="ambient-control">
+            <div class="ambient-control-label">External Temperature</div>
+            <div id="ambientRail" class="ambient-rail">
+                <div id="ambientHandle" class="ambient-handle"></div>
+            </div>
+            <div id="ambientValue" class="ambient-value"></div>
+        </div>
+    </div>
+
+    <div class="sim-meta">
+        <div id="simTime" class="meta-chip">t = 0.0 s</div>
+        <div id="nodeStatus" class="meta-chip">Control node: -</div>
+        <div id="valveStatus" class="meta-chip">valves: -</div>
+    </div>
+
+    <div class="controller-graph-wrap">
+        <canvas id="controllerGraphCanvas" width="900" height="430"></canvas>
+    </div>
+</section>
+
+<section class="content-section">
+    <h2 class="section-title">Report</h2>
+    <div class="reports-list">
+        <a href="assets/Switching_Control.pdf" target="_blank" rel="noopener noreferrer">Switching_Control.pdf</a>
+    </div>
+</section>
+
+<div class="back-nav">
+    <a class="back-button" href="index.html">Back to Portfolio</a>
+</div>
+
+<script>
+const constants = {
+    Cr: 140000,
+    C2: 60000,
+    Cb: 200000,
+    R2: 0.02,
+    RB: 5,
+    R1: 0.01,
+    T1: 275,
+    R0hat: 1 / 250,
+    Rhat: 0.1,
+    rho: 1000,
+    g: 9.81,
+    l: 1.4,
+    omega0: 0.0002,
+    omega1: 1,
+    At: 0.01,
+    Ac: 0.01,
+    m: 1,
+    R0: 500000,
+    Rt: 5000000,
+    Amp: 400,
+    As: 30,
+    mu: 0.1,
+    t1: 6 * 60 * 60,
+    t2: 20 * 60 * 60,
+    T_ll: 293.15,
+    T_ref: 294.15,
+    T_ul: 295.15,
+    T_v0: 10,
+    T_v1v2: 10,
+    f1: 0.1 * 1480,
+    dt_big: 1,
+    dt_small: 1,
+    simSpeed: 300,
+    historySeconds: 7200,
+    Tmin: 260,
+    Tmax: 320
+};
+
+const initialState = [288, 289, 274 + 90, 0, 0, 1];
+
+const controllerNodes = {
+    1: { name: 'heating, window closed', output: [0, 0, 0, 0, 1] },
+    2: { name: 'cooling, window closed', output: [0, 0, 0, 0, 1] },
+    3: { name: 'turning valves 1 and 2 +', output: [0, 1, 1, 0, 0] },
+    4: { name: 'turning valves 1 and 2 -', output: [0, -1, -1, 0, 0] },
+    5: { name: 'window closed', output: [0, 0, 0, 0, 0] },
+    6: { name: 'turning valve 0 +', output: [1, 0, 0, 0, 0] },
+    7: { name: 'closing window', output: [0, 0, 0, 0, 0] },
+    8: { name: 'opening window', output: [0, 0, 0, 1, 0] },
+    9: { name: 'turning valve 0 -', output: [-1, 0, 0, 0, 0] },
+    10: { name: 'window opened', output: [0, 0, 0, 0, 0] }
+};
+
+const controllerLinks = [
+    { from: 1, to: 4, cond: [1, 0, 1, 1, 0] },
+    { from: 2, to: 3, cond: [2, 0, -1, -1, 0] },
+    { from: 2, to: 3, cond: [1, 0, -1, -1, 0] },
+    { from: 2, to: 3, cond: [0, 0, -1, -1, 0] },
+    { from: 3, to: 1, cond: [0, 0, 1, 1, 0] },
+    { from: 3, to: 4, cond: [3, 0, 0, 0, 0] },
+    { from: 3, to: 4, cond: [1, 0, -1, -1, 0] },
+    { from: 3, to: 5, cond: [1, 0, 0, 0, 0] },
+    { from: 3, to: 6, cond: [2, 0, 0, 0, 0] },
+    { from: 4, to: 2, cond: [3, 0, -1, -1, 0] },
+    { from: 4, to: 3, cond: [0, 0, -1, -1, 0] },
+    { from: 4, to: 3, cond: [2, 0, -1, -1, 0] },
+    { from: 4, to: 5, cond: [1, 0, 0, 0, 0] },
+    { from: 5, to: 3, cond: [0, 0, 0, 0, 0] },
+    { from: 5, to: 3, cond: [3, 0, 0, 0, 0] },
+    { from: 5, to: 6, cond: [2, 0, 0, 0, 0] },
+    { from: 6, to: 4, cond: [3, 0, 0, 0, 0] },
+    { from: 6, to: 5, cond: [0, 0, 0, 0, 0] },
+    { from: 6, to: 5, cond: [1, 0, 0, 0, 0] },
+    { from: 6, to: 8, cond: [2, 1, 0, 0, 0] },
+    { from: 7, to: 6, cond: [0, -1, 0, 0, 0] },
+    { from: 7, to: 6, cond: [1, -1, 0, 0, 0] },
+    { from: 7, to: 6, cond: [2, -1, 0, 0, 0] },
+    { from: 7, to: 6, cond: [3, -1, 0, 0, 0] },
+    { from: 8, to: 9, cond: [0, 1, 0, 0, 2] },
+    { from: 8, to: 9, cond: [1, 1, 0, 0, 2] },
+    { from: 8, to: 9, cond: [2, 1, 0, 0, 2] },
+    { from: 8, to: 9, cond: [3, 1, 0, 0, 2] },
+    { from: 9, to: 7, cond: [0, -1, 0, 0, 2] },
+    { from: 9, to: 7, cond: [1, -1, 0, 0, 2] },
+    { from: 9, to: 7, cond: [3, -1, 0, 0, 2] },
+    { from: 9, to: 10, cond: [2, 0, 0, 0, 2] },
+    { from: 10, to: 9, cond: [0, 0, 0, 0, 2] },
+    { from: 10, to: 9, cond: [1, 0, 0, 0, 2] },
+    { from: 10, to: 9, cond: [3, 0, 0, 0, 2] }
+];
+
+const graphByFrom = {};
+for (let i = 1; i <= 10; i += 1) {
+    graphByFrom[i] = [];
+}
+for (let i = 0; i < controllerLinks.length; i += 1) {
+    graphByFrom[controllerLinks[i].from].push(controllerLinks[i]);
+}
+
+const temperatureCanvas = document.getElementById('temperatureCanvas');
+const controllerGraphCanvas = document.getElementById('controllerGraphCanvas');
+const ambientRail = document.getElementById('ambientRail');
+const ambientHandle = document.getElementById('ambientHandle');
+const ambientValue = document.getElementById('ambientValue');
+const simTime = document.getElementById('simTime');
+const nodeStatus = document.getElementById('nodeStatus');
+const valveStatus = document.getElementById('valveStatus');
+
+const ctx = temperatureCanvas.getContext('2d');
+const controllerCtx = controllerGraphCanvas.getContext('2d');
+
+const edgeHighlightFadeMs = 1400;
+
+const controllerEdges = [];
+const uniqueEdgeMap = new Set();
+for (let i = 0; i < controllerLinks.length; i += 1) {
+    const key = `${controllerLinks[i].from}-${controllerLinks[i].to}`;
+    if (uniqueEdgeMap.has(key)) {
+        continue;
+    }
+    uniqueEdgeMap.add(key);
+    controllerEdges.push({ from: controllerLinks[i].from, to: controllerLinks[i].to });
+}
+
+let sim = {
+    t: 0,
+    x: initialState.slice(),
+    valve0: 0,
+    valve1: 1,
+    node: 1,
+    ambientT: 299.15,
+    history: [],
+    linkHighlights: [],
+    simAccumulator: 0,
+    dxdtCache: [0, 0, 0, 0, 0, 0]
+};
+
+let lastFrameTs = null;
+let dragActive = false;
+let simLoopTimer = null;
+
+function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+}
+
+function snapValve(v) {
+    let out = clamp(v, -1, 1);
+    if (Math.abs(out) < 1e-9) {
+        return 0;
+    }
+    if (out > 1 - 1e-9) {
+        return 1;
+    }
+    if (out < -1 + 1e-9) {
+        return -1;
+    }
+    return out;
+}
+
+function valveSignal(v) {
+    if (Math.abs(v - 1) < 1e-9) {
+        return 1;
+    }
+    if (Math.abs(v + 1) < 1e-9) {
+        return -1;
+    }
+    return 0;
+}
+
+function approxEqualTuple(a, b) {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let i = 0; i < a.length; i += 1) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function resistance(theta) {
+    return constants.Rhat * (1 - Math.sin(2 * theta)) + constants.R0hat;
+}
+
+function solarInput(t) {
+    const day = 24 * 60 * 60;
+    const td = ((t % day) + day) % day;
+    if (td <= constants.t1 || td >= constants.t2) {
+        return 0;
+    }
+    const period = constants.t2 - constants.t1;
+    const omega = Math.PI / period;
+    return constants.Amp * Math.sin(omega * (td - constants.t1));
+}
+
+function measurementSignal() {
+    const Tr = sim.x[0];
+    let trBand = 0;
+    if (Tr < constants.T_ll) {
+        trBand = 0;
+    } else if (Tr < constants.T_ref) {
+        trBand = 1;
+    } else if (Tr < constants.T_ul) {
+        trBand = 2;
+    } else {
+        trBand = 3;
+    }
+
+    const v0 = valveSignal(sim.valve0);
+    const v1 = valveSignal(sim.valve1);
+    const v2 = v1;
+
+    let w = 1;
+    if (Math.abs(sim.x[3] - Math.PI / 4) < 1e-9) {
+        w = 2;
+    } else if (sim.x[3] <= 1e-6) {
+        sim.x[3] = 0;
+        w = 0;
+    }
+
+    return [trBand, v0, v1, v2, w];
+}
+
+function controllerUpdate() {
+    const m = measurementSignal();
+    const options = graphByFrom[sim.node] || [];
+    for (let i = 0; i < options.length; i += 1) {
+        if (approxEqualTuple(m, options[i].cond)) {
+            const previousNode = sim.node;
+            sim.node = options[i].to;
+            sim.linkHighlights.push({
+                from: previousNode,
+                to: sim.node,
+                startedAtMs: performance.now()
+            });
+            return true;
+        }
+    }
+    return false;
+}
+
+function drawRoundedRect(context, x, y, w, h, r) {
+    context.beginPath();
+    context.moveTo(x + r, y);
+    context.lineTo(x + w - r, y);
+    context.quadraticCurveTo(x + w, y, x + w, y + r);
+    context.lineTo(x + w, y + h - r);
+    context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    context.lineTo(x + r, y + h);
+    context.quadraticCurveTo(x, y + h, x, y + h - r);
+    context.lineTo(x, y + r);
+    context.quadraticCurveTo(x, y, x + r, y);
+    context.closePath();
+}
+
+function splitLabelForNode(name) {
+    const parts = name.split(',');
+    if (parts.length > 1) {
+        return [parts[0].trim(), parts[1].trim()];
+    }
+    const words = name.split(' ');
+    if (words.length <= 3) {
+        return [name];
+    }
+    const mid = Math.ceil(words.length / 2);
+    return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+}
+
+function getNodePixelPosition(nodeId, width, height) {
+    const totalNodes = 10;
+    const centerX = width * 0.5;
+    const centerY = height * 0.5;
+    const radiusX = width * 0.43;
+    const radiusY = height * 0.34;
+    const angle = -Math.PI / 2 + (2 * Math.PI * (nodeId - 1)) / totalNodes;
+    return {
+        x: centerX + radiusX * Math.cos(angle),
+        y: centerY + radiusY * Math.sin(angle)
+    };
+}
+
+function drawControllerGraph() {
+    if (!controllerCtx) {
+        return;
+    }
+
+    const width = controllerGraphCanvas.width;
+    const height = controllerGraphCanvas.height;
+    const nodeW = 140;
+    const nodeH = 54;
+    const nodeR = 9;
+
+    controllerCtx.clearRect(0, 0, width, height);
+    controllerCtx.fillStyle = '#fafcff';
+    controllerCtx.fillRect(0, 0, width, height);
+
+    const nowMs = performance.now();
+    sim.linkHighlights = sim.linkHighlights.filter((h) => nowMs - h.startedAtMs <= edgeHighlightFadeMs);
+
+    for (let i = 0; i < controllerEdges.length; i += 1) {
+        const edge = controllerEdges[i];
+        const from = getNodePixelPosition(edge.from, width, height);
+        const to = getNodePixelPosition(edge.to, width, height);
+
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const mag = Math.max(1e-6, Math.sqrt(dx * dx + dy * dy));
+        const ux = dx / mag;
+        const uy = dy / mag;
+        const startX = from.x + ux * (nodeW * 0.38);
+        const startY = from.y + uy * (nodeH * 0.4);
+        const endX = to.x - ux * (nodeW * 0.38);
+        const endY = to.y - uy * (nodeH * 0.4);
+        const normalX = -uy;
+        const normalY = ux;
+        const curve = Math.min(26, 0.12 * mag);
+        const cx = (startX + endX) * 0.5 + normalX * curve;
+        const cy = (startY + endY) * 0.5 + normalY * curve;
+
+        controllerCtx.strokeStyle = 'rgba(44, 62, 80, 0.26)';
+        controllerCtx.lineWidth = 1.2;
+        controllerCtx.setLineDash([]);
+        controllerCtx.beginPath();
+        controllerCtx.moveTo(startX, startY);
+        controllerCtx.quadraticCurveTo(cx, cy, endX, endY);
+        controllerCtx.stroke();
+
+        let maxAlpha = 0;
+        for (let j = 0; j < sim.linkHighlights.length; j += 1) {
+            const hl = sim.linkHighlights[j];
+            if (hl.from === edge.from && hl.to === edge.to) {
+                const age = nowMs - hl.startedAtMs;
+                const a = clamp(1 - age / edgeHighlightFadeMs, 0, 1);
+                maxAlpha = Math.max(maxAlpha, a);
+            }
+        }
+
+        if (maxAlpha > 0) {
+            controllerCtx.strokeStyle = `rgba(214, 39, 40, ${0.2 + 0.8 * maxAlpha})`;
+            controllerCtx.lineWidth = 2.6;
+            controllerCtx.beginPath();
+            controllerCtx.moveTo(startX, startY);
+            controllerCtx.quadraticCurveTo(cx, cy, endX, endY);
+            controllerCtx.stroke();
+        }
+    }
+
+    for (let id = 1; id <= 10; id += 1) {
+        const p = getNodePixelPosition(id, width, height);
+        const x = p.x - nodeW / 2;
+        const y = p.y - nodeH / 2;
+        const active = sim.node === id;
+
+        controllerCtx.fillStyle = active ? 'rgba(44, 62, 80, 0.18)' : '#ffffff';
+        controllerCtx.strokeStyle = active ? '#2c3e50' : '#cfdbe7';
+        controllerCtx.lineWidth = active ? 2.4 : 1.2;
+        drawRoundedRect(controllerCtx, x, y, nodeW, nodeH, nodeR);
+        controllerCtx.fill();
+        controllerCtx.stroke();
+
+        const titleLines = splitLabelForNode(controllerNodes[id].name);
+        controllerCtx.fillStyle = '#2c3e50';
+        controllerCtx.font = active ? '600 10px Segoe UI' : '10px Segoe UI';
+        controllerCtx.textAlign = 'center';
+        controllerCtx.textBaseline = 'middle';
+
+        const lineGap = 12;
+        const startY = p.y - ((titleLines.length - 1) * lineGap) / 2;
+        for (let li = 0; li < titleLines.length; li += 1) {
+            controllerCtx.fillText(titleLines[li], p.x, startY + li * lineGap);
+        }
+    }
+}
+
+function applyControl(dt) {
+    while (controllerUpdate()) {
+        // Follow immediate transitions until stable in current measurement.
+    }
+
+    const output = controllerNodes[sim.node].output;
+    sim.valve0 += output[0] * dt / constants.T_v0;
+    sim.valve1 += output[1] * dt / constants.T_v1v2;
+    sim.valve0 = snapValve(sim.valve0);
+    sim.valve1 = snapValve(sim.valve1);
+
+    while (controllerUpdate()) {
+        // Settle again after actuator update.
+    }
+}
+
+function derivatives() {
+    const x = sim.x;
+    const theta = x[3];
+    const thDot = x[4];
+    const h = x[5];
+    const valve0Mode = valveSignal(sim.valve0);
+    const valve1Mode = valveSignal(sim.valve1);
+
+    const R = resistance(theta);
+    const invCr = 1 / constants.Cr;
+    const invC2 = 1 / constants.C2;
+    const invCb = 1 / constants.Cb;
+
+    const dx = [0, 0, 0, 0, 0, 0];
+
+    const A00 = -1 / constants.R2 * invCr - 1 / R * invCr;
+    const A01 = 1 / constants.R2 * invCr;
+    const A10 = 1 / constants.R2 * invC2;
+    let A11 = -1 / constants.R2 * invC2;
+
+    let A12 = 0;
+    let A21 = 0;
+    let A22 = 0;
+
+    if (valve1Mode === 1) {
+        A12 = constants.f1 * invC2;
+        A21 = constants.f1 * invCb;
+        A22 = -constants.f1 * invCb;
+        A11 -= constants.f1 * invC2;
+    } else if (valve1Mode === -1) {
+        A11 -= constants.f1 * invC2;
+    }
+
+    let A34 = 0;
+    let A44 = 0;
+    if (valve0Mode === -1) {
+        A34 = 1;
+        const base = (constants.l * constants.l / 4) * constants.m;
+        const tr = constants.Ac * constants.Ac * constants.R0 * constants.l / 4;
+        A44 = -(1 / base) * tr * Math.cos(Math.PI / 4 + theta / 2) * Math.sin(Math.PI / 4 - theta / 2);
+    }
+
+    const A55 = -constants.rho * constants.g / constants.Rt / constants.At;
+
+    const con0 = (sim.ambientT / R) * invCr;
+    let con1 = 0;
+    let con3 = 0;
+    let con4 = 0;
+    let con5 = 0;
+
+    if (valve1Mode === -1) {
+        con1 = constants.T1 * constants.f1 * invC2;
+        con5 = constants.omega1 / constants.At;
+    }
+
+    if (valve0Mode === 1) {
+        const denom = constants.Ac * constants.l * Math.cos(Math.PI / 4 + theta / 2);
+        con3 = Math.abs(denom) > 1e-8 ? (4 * constants.omega0) / denom : 0;
+    } else if (valve0Mode === -1) {
+        const base = (constants.l * constants.l / 4) * constants.m;
+        con4 = (1 / base) * (-constants.l / 2 * constants.m * constants.g * Math.sin(theta));
+    }
+
+    const B2 = x[2] < (274 + 110)
+        ? constants.As * constants.mu * constants.RB / (constants.RB + constants.R1) * invCb
+        : 0;
+
+    const u = solarInput(sim.t);
+
+    dx[0] = A00 * x[0] + A01 * x[1] + con0;
+    dx[1] = A10 * x[0] + A11 * x[1] + A12 * x[2] + con1;
+    dx[2] = A21 * x[1] + A22 * x[2] + B2 * u;
+    dx[3] = A34 * thDot + con3;
+    dx[4] = A44 * thDot + con4;
+    dx[5] = A55 * h + con5;
+
+    return dx;
+}
+
+function computeDt(dx5) {
+    if (Math.abs(sim.valve0) < 1e-9 && Math.abs(dx5) < 0.01) {
+        return constants.dt_big;
+    }
+    return constants.dt_small;
+}
+
+function simStep(dt) {
+    applyControl(dt);
+    const dxAfterControl = derivatives();
+    for (let i = 0; i < sim.x.length; i += 1) {
+        sim.x[i] += dxAfterControl[i] * dt;
+    }
+
+    sim.x[3] = clamp(sim.x[3], 0, Math.PI / 4);
+    sim.x[5] = Math.max(0, sim.x[5]);
+    sim.valve0 = snapValve(sim.valve0);
+    sim.valve1 = snapValve(sim.valve1);
+    sim.dxdtCache = dxAfterControl;
+    sim.t += dt;
+
+    sim.history.push({
+        t: sim.t,
+        Tr: sim.x[0],
+        T2: sim.x[1],
+        Tb: sim.x[2],
+        T0: sim.ambientT
+    });
+
+    const cutoff = sim.t - constants.historySeconds;
+    while (sim.history.length > 0 && sim.history[0].t < cutoff) {
+        sim.history.shift();
+    }
+}
+
+function formatK(v) {
+    return `${v.toFixed(2)} K`;
+}
+
+function drawTemperaturePlot() {
+    const width = temperatureCanvas.width;
+    const height = temperatureCanvas.height;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#fafcff';
+    ctx.fillRect(0, 0, width, height);
+
+    const pad = { left: 58, right: 22, top: 20, bottom: 36 };
+    const x0 = pad.left;
+    const y0 = pad.top;
+    const w = width - pad.left - pad.right;
+    const h = height - pad.top - pad.bottom;
+
+    const xMin = Math.max(0, sim.t - constants.historySeconds);
+    const xMax = Math.max(xMin + 1, sim.t);
+
+    let yMin = constants.Tmin - 273.15;
+    let yMax = constants.Tmax - 273.15;
+
+    for (let i = 0; i < sim.history.length; i += 1) {
+        const p = sim.history[i];
+        yMin = Math.min(yMin, p.Tr - 273.15, p.T2 - 273.15, p.Tb - 273.15, p.T0 - 273.15);
+        yMax = Math.max(yMax, p.Tr - 273.15, p.T2 - 273.15, p.Tb - 273.15, p.T0 - 273.15);
+    }
+
+    yMin = Math.floor((yMin - 1) / 2) * 2;
+    yMax = Math.ceil((yMax + 1) / 2) * 2;
+
+    function px(t) {
+        return x0 + ((t - xMin) / (xMax - xMin)) * w;
+    }
+
+    function py(temp) {
+        return y0 + (1 - (temp - yMin) / (yMax - yMin)) * h;
+    }
+
+    ctx.strokeStyle = '#dce5ee';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 6; i += 1) {
+        const yy = y0 + (i / 6) * h;
+        ctx.beginPath();
+        ctx.moveTo(x0, yy);
+        ctx.lineTo(x0 + w, yy);
+        ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x0, y0 + h);
+    ctx.lineTo(x0 + w, y0 + h);
+    ctx.stroke();
+
+    const series = [
+        { key: 'Tr', color: '#d62728', alpha: 1, dashed: false },
+        { key: 'T2', color: '#1f77b4', alpha: 0.5, dashed: true },
+        { key: 'Tb', color: '#ff7f0e', alpha: 0.5, dashed: true },
+        { key: 'T0', color: '#2ca02c', alpha: 1, dashed: false }
+    ];
+    const targetRoomC = constants.T_ref - 273.15;
+
+    for (let s = 0; s < series.length; s += 1) {
+        const { key, color, alpha, dashed } = series[s];
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = alpha;
+        ctx.setLineDash(dashed ? [7, 6] : []);
+        ctx.beginPath();
+        for (let i = 0; i < sim.history.length; i += 1) {
+            const p = sim.history[i];
+            const x = px(p.t);
+            const y = py(p[key] - 273.15);
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.setLineDash([]);
+
+    ctx.setLineDash([7, 6]);
+    ctx.strokeStyle = '#2c3e50';
+    ctx.lineWidth = 1.3;
+    ctx.beginPath();
+    ctx.moveTo(x0, py(targetRoomC));
+    ctx.lineTo(x0 + w, py(targetRoomC));
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#4b5f73';
+    ctx.font = '13px Segoe UI';
+    ctx.fillText('time [s]', x0 + w - 54, y0 + h + 24);
+    ctx.fillText('T [C]', x0 - 44, y0 - 4);
+
+    for (let i = 0; i <= 4; i += 1) {
+        const temp = yMin + (i / 4) * (yMax - yMin);
+        const yy = py(temp);
+        ctx.fillStyle = '#6a7b8c';
+        ctx.fillText(temp.toFixed(0), x0 - 38, yy + 4);
+    }
+
+}
+
+function refreshMeta() {
+    const node = controllerNodes[sim.node];
+    const valve0Mode = valveSignal(sim.valve0);
+    const valve1Mode = valveSignal(sim.valve1);
+    const totalSeconds = Math.max(0, Math.floor(sim.t));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const hh = String(hours).padStart(2, '0');
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+
+    simTime.textContent = `t = ${hh}:${mm}:${ss}`;
+    nodeStatus.textContent = `Control node ${sim.node}: ${node.name}`;
+    valveStatus.textContent = `v0=${sim.valve0.toFixed(2)} (${valve0Mode}), v1=${sim.valve1.toFixed(2)} (${valve1Mode}), theta=${(sim.x[3] * 180 / Math.PI).toFixed(1)} deg`;
+}
+
+function railPositionFromTemperature(tempK) {
+    const ratio = (tempK - constants.Tmin) / (constants.Tmax - constants.Tmin);
+    return clamp(ratio, 0, 1);
+}
+
+function setAmbientFromPointer(clientY) {
+    const rect = ambientRail.getBoundingClientRect();
+    const ratio = clamp((rect.bottom - clientY) / Math.max(1, rect.height), 0, 1);
+    sim.ambientT = constants.Tmin + ratio * (constants.Tmax - constants.Tmin);
+    updateAmbientUI();
+}
+
+function updateAmbientUI() {
+    const ratio = railPositionFromTemperature(sim.ambientT);
+    ambientHandle.style.bottom = `${ratio * 100}%`;
+    ambientValue.textContent = `${(sim.ambientT - 273.15).toFixed(1)} C`;
+}
+
+function setupAmbientDrag() {
+    ambientRail.addEventListener('pointerdown', (event) => {
+        dragActive = true;
+        ambientRail.setPointerCapture(event.pointerId);
+        setAmbientFromPointer(event.clientY);
+    });
+
+    ambientRail.addEventListener('pointermove', (event) => {
+        if (!dragActive || !ambientRail.hasPointerCapture(event.pointerId)) {
+            return;
+        }
+        setAmbientFromPointer(event.clientY);
+    });
+
+    function endDrag(event) {
+        dragActive = false;
+        if (event && ambientRail.hasPointerCapture(event.pointerId)) {
+            ambientRail.releasePointerCapture(event.pointerId);
+        }
+    }
+
+    ambientRail.addEventListener('pointerup', endDrag);
+    ambientRail.addEventListener('pointercancel', endDrag);
+}
+
+function animationStep(ts) {
+    if (lastFrameTs === null) {
+        lastFrameTs = ts;
+    }
+
+    const elapsedSec = Math.max(0, (ts - lastFrameTs) / 1000);
+    lastFrameTs = ts;
+
+    sim.simAccumulator += elapsedSec * constants.simSpeed;
+    let guard = 0;
+    while (guard < 200) {
+        const dt = computeDt(sim.dxdtCache[5]);
+        if (sim.simAccumulator + 1e-9 < dt) {
+            break;
+        }
+        simStep(dt);
+        sim.simAccumulator -= dt;
+        guard += 1;
+    }
+
+    drawTemperaturePlot();
+    drawControllerGraph();
+    refreshMeta();
+}
+
+function startSimulationLoop() {
+    if (simLoopTimer !== null) {
+        window.clearInterval(simLoopTimer);
+    }
+    lastFrameTs = performance.now();
+    simLoopTimer = window.setInterval(() => {
+        animationStep(performance.now());
+    }, 33);
+}
+
+function initSimulation() {
+    const trBand = sim.x[0] < constants.T_ll
+        ? 0
+        : (sim.x[0] < constants.T_ref ? 1 : (sim.x[0] < constants.T_ul ? 2 : 3));
+    sim.node = trBand === 0 ? 1 : (trBand === 1 ? 5 : (trBand === 2 ? 10 : 2));
+    sim.simAccumulator = 0;
+    sim.dxdtCache = derivatives();
+
+    sim.history = [
+        {
+            t: 0,
+            Tr: sim.x[0],
+            T2: sim.x[1],
+            Tb: sim.x[2],
+            T0: sim.ambientT
+        }
+    ];
+
+    setupAmbientDrag();
+    updateAmbientUI();
+    drawTemperaturePlot();
+    drawControllerGraph();
+    refreshMeta();
+    startSimulationLoop();
+}
+
+initSimulation();
+</script>
+</body>
+</html>

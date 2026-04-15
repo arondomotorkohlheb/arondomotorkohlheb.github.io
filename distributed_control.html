@@ -293,9 +293,9 @@ body {
 .node-state-dot {
     position: absolute;
     top: 50%;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+    width: 5px;
+    height: 18px;
+    border-radius: 2px;
     transform: translate(-50%, -50%);
     border: 1px solid #fff;
     box-shadow: 0 0 0 1px rgba(44, 62, 80, 0.2);
@@ -354,6 +354,23 @@ body {
     transform: translateY(-2px);
 }
 
+.reports-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.reports-list a {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 18px;
+}
+
+.reports-list a:hover {
+    text-decoration: underline;
+    color: #0052a3;
+}
+
 @media (max-width: 768px) {
     .headline {
         font-size: 1.85em;
@@ -394,17 +411,18 @@ body {
         <a href="qube.html">Inverted Pendulum</a>
         <a href="testbed.html">Layered Control</a>
         <a class="active" href="distributed_control.html">Distributed Control</a>
+        <a href="switched_control.html">Switched Control</a>
     </nav>
 </header>
 
 <h1 class="headline">Distributed Control</h1>
-<p class="intro-text">Distributed Linear Quadratic Controller with coupling state convergence and constrained inputs.</p>
+<p class="intro-text">Distributed Linear Quadratic Regulator with coupling state convergence and constrained inputs.</p>
 
 
 <section class="content-section">
-    <h2 class="section-title">Distributed linear quadratic regulator with state convergence performance</h2>
+    <h2 class="section-title">Distributed Control under shared terminal constrain</h2>
     <p class="project-description">
-        The optimization is with respect to the finite horizon LQR with input constraints and terminal constraints, namely that the states have to converge within a finite horizon. 
+        Real time simulation of a plant with multiple independent LTIs and distributed control to solve the coupling constraint under input limitations
     </p>
     
     <div class="solver-controls">
@@ -437,6 +455,16 @@ body {
         <h2 class="section-title">Derivations</h2>
     </div>
     <div id="derivationsPdf" class="pdf-flat-wrap"></div>
+</section>
+
+<section class="content-section">
+    <h2 class="section-title">Full Report on Handling Delays and Distributed Optimization</h2>
+    <p class="project-description">
+        Detailed report covering delay handling, distributed optimization structure, and implementation results.
+    </p>
+    <div class="reports-list">
+        <a href="assets/Networked_and_Distributed_Control.pdf" target="_blank" rel="noopener noreferrer">Networked_and_Distributed_Control.pdf</a>
+    </div>
 </section>
 
 <div class="back-nav">
@@ -505,13 +533,14 @@ const AList = [A1, A2, A3, A4];
 const BList = [B1, B2, B3, B4];
 const x0List = [x01, x02, x03, x04];
 
-const INPUT_LIMIT = 0.47;
-const PLOT_MIN = -1.5;
-const PLOT_MAX = 1.5;
+const INPUT_LIMIT = 0.46;
+const PLOT_MIN = -0.8;
+const PLOT_MAX = 0.8;
 
 const horizonT = 20;
 const uMax = INPUT_LIMIT;
 const renderDelayMs = 160;
+const xTrailFadeDurationMs = 80000;
 
 const admmRho = 264;
 const subgradientAlpha = 5;
@@ -558,6 +587,60 @@ let derivationsPdfDoc = null;
 let derivationsPdfRenderToken = 0;
 let derivationsPdfResizeTimer = null;
 let shouldStopFromTolerance = false;
+
+function disposeLineObject(lineObj) {
+    if (!lineObj) {
+        return;
+    }
+    if (lineObj.geometry) {
+        lineObj.geometry.dispose();
+    }
+    if (lineObj.material) {
+        lineObj.material.dispose();
+    }
+}
+
+function clearTrailSegments(panel, nodeIndex) {
+    if (!panel || !panel.nodeTrailSegments || !panel.nodeTrailSegments[nodeIndex]) {
+        return;
+    }
+    const segmentList = panel.nodeTrailSegments[nodeIndex];
+    for (let i = 0; i < segmentList.length; i += 1) {
+        panel.scene.remove(segmentList[i]);
+        disposeLineObject(segmentList[i]);
+    }
+    panel.nodeTrailSegments[nodeIndex] = [];
+}
+
+function setFadedTrail(panel, nodeIndex, points, colorHex) {
+    clearTrailSegments(panel, nodeIndex);
+
+    if (!points || points.length < 2) {
+        return;
+    }
+
+    const maxTrailPoints = Math.max(3, Math.floor(xTrailFadeDurationMs / renderDelayMs) + 1);
+    const startIndex = Math.max(0, points.length - maxTrailPoints);
+    const visiblePoints = points.slice(startIndex);
+    const segmentCount = visiblePoints.length - 1;
+
+    for (let i = 0; i < segmentCount; i += 1) {
+        const segGeom = new THREE.BufferGeometry().setFromPoints([
+            visiblePoints[i],
+            visiblePoints[i + 1]
+        ]);
+        const ageRatio = segmentCount > 1 ? i / (segmentCount - 1) : 1;
+        const opacity = 0.05 + 0.95 * ageRatio;
+        const segMat = new THREE.LineBasicMaterial({
+            color: colorHex,
+            transparent: true,
+            opacity
+        });
+        const segLine = new THREE.Line(segGeom, segMat);
+        panel.scene.add(segLine);
+        panel.nodeTrailSegments[nodeIndex].push(segLine);
+    }
+}
 
 function vecAdd(a, b) {
     return a.map((v, i) => v + b[i]);
@@ -855,6 +938,7 @@ function makePanel(containerEl) {
         renderer: new THREE.WebGLRenderer({ antialias: true }),
         nodeSpheres: [],
         nodeTrails: [],
+        nodeTrailSegments: [],
         orbitRadius: 4.2,
         orbitAzimuth: 0.7,
         orbitPolar: 1.05,
@@ -906,6 +990,7 @@ function makePanel(containerEl) {
         const trail = new THREE.Line(trailGeom, trailMat);
         panel.scene.add(trail);
         panel.nodeTrails.push(trail);
+        panel.nodeTrailSegments.push([]);
     }
 
     panel.renderer.domElement.addEventListener('pointerdown', (event) => {
@@ -1513,6 +1598,9 @@ function updatePlot() {
         const xGeom = new THREE.BufferGeometry().setFromPoints(xPoints);
         xPanel.nodeTrails[i].geometry.dispose();
         xPanel.nodeTrails[i].geometry = xGeom;
+        xPanel.nodeTrails[i].material.transparent = true;
+        xPanel.nodeTrails[i].material.opacity = 0;
+        setFadedTrail(xPanel, i, xPoints, nodeColors[i]);
 
         const xfGeom = new THREE.BufferGeometry().setFromPoints(xfPoints);
         xfPanel.nodeTrails[i].geometry.dispose();
