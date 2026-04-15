@@ -92,6 +92,14 @@ class Qube {
         return [acc0, acc1];
     }
 
+    // Generate white noise using Box-Muller transform
+    generateWhiteNoise(magnitude = 0.01) {
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z0 = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+        return magnitude * z0;
+    }
+
     // Integrate the state by one timestep
     step() {
         this.referenceTracking();
@@ -105,8 +113,11 @@ class Qube {
         const u = this.controlled ? this.controlInput() : 0;
         const [acc_theta, acc_alpha] = this.computeAcceleration(u);
 
+        // Add small white noise disturbance to alpha
+        const alphaNoise = this.generateWhiteNoise(0.005);
+
         this.x[0] += acc_theta * this.dt;
-        this.x[1] += acc_alpha * this.dt;
+        this.x[1] += (acc_alpha + alphaNoise) * this.dt;
         this.x[2] += this.x[0] * this.dt;
         this.x[3] += this.x[1] * this.dt;
         this.t += this.dt;

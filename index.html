@@ -125,7 +125,7 @@
 
         .project-card {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 20px;
             background: white;
             border-radius: 8px;
@@ -148,11 +148,87 @@
             flex: 0 0 96px;
         }
 
-        .project-description {
+        .project-content {
             flex: 1;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .project-title {
+            margin: 0 0 6px 0;
+            color: #2c3e50;
+            font-size: 1.15em;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .project-description {
+            margin: 0;
+            text-align: left;
             color: #34495e;
             font-size: 1.05em;
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #2c3e50;
+            font-style: italic;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .entry {
+            margin-bottom: 25px;
+        }
+
+        .entry-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .entry-subtitle {
+            font-size: 0.95em;
+            color: #7f8c8d;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .entry-description {
+            color: #555;
+            line-height: 1.6;
+            font-size: 0.98em;
+        }
+
+        .entry-date {
+            color: #95a5a6;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .education-entry {
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -197,6 +273,18 @@
                 text-align: left;
                 font-size: 0.98em;
             }
+
+            .project-title {
+                font-size: 1.05em;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .section-title {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
@@ -226,25 +314,147 @@
             </div>
         </div>
 
+        <!-- Projects Section -->
+        <h2 class="section-title">Projects</h2>
         <section class="projects-section">
-            <h2 class="projects-title">Projects:</h2>
             <div class="projects-list">
                 <a class="project-card" href="qube.html">
                     <img src="assets\qube_sketch.png" alt="Qube project sketch" class="project-thumb">
-                    <p class="project-description">Inverted pendulum modeling, system identification, linear quadratic regulator, and model predictive control, guarantees and implementation.</p>
+                    <div class="project-content">
+                        <div class="project-title">Inverted Pendulum</div>
+                        <p class="project-description">Inverted pendulum modeling, system identification, linear quadratic regulator, and model predictive control, guarantees and implementation.</p>
+                    </div>
                 </a>
                 <a class="project-card" href="testbed.html">
                     <img src="assets/layered_control_placeholder.svg" alt="Layered control placeholder" class="project-thumb">
-                    <p class="project-description">Layered control for wind farm cybersecurity testbeds with real-time hardware-in-the-loop integration, supervisory and local control coordination, and resilient communication architecture.</p>
+                    <div class="project-content">
+                        <div class="project-title">Layered Control</div>
+                        <p class="project-description">Layered control for wind farm cybersecurity testbeds with real-time hardware-in-the-loop integration, supervisory and local control coordination, and resilient communication architecture.</p>
+                    </div>
                 </a>
                 <a class="project-card" href="distributed_control.html">
                     <img src="assets/distributed_control_placeholder.svg" alt="Distributed control placeholder" class="project-thumb">
-                    <p class="project-description">Distributed Linear Quadratic Controller with coupling state convergence and constrained inputs.</p>
+                    <div class="project-content">
+                        <div class="project-title">Distributed Control</div>
+                        <p class="project-description">Distributed Linear Quadratic Controller with coupling state convergence and constrained inputs.</p>
+                    </div>
                 </a>
                 <a class="project-card" href="switched_control.html">
-                    <img src="mini-project/figures/high-level_controller.png" alt="Switched control project figure" class="project-thumb">
-                    <p class="project-description">Hybrid switched control with real-time simulation of thermal dynamics, valve logic, and interactive external-temperature manipulation.</p>
+                    <img src="assets/switched_control_placeholder.svg" alt="Switched control project figure" class="project-thumb">
+                    <div class="project-content">
+                        <div class="project-title">Switched Control</div>
+                        <p class="project-description">Hybrid switched control with real-time simulation of thermal dynamics, valve logic, and interactive external-temperature manipulation.</p>
+                    </div>
                 </a>
+            </div>
+        </section>
+
+        <!-- Education Section -->
+        <h2 class="section-title">Education</h2>
+        <section class="section">
+            <div class="education-entry">
+                <div class="entry-title">MSc Systems and Control</div>
+                <div class="entry-subtitle">Delft Center for Systems and Control, TU Delft</div>
+                <div class="entry-date">Sep. 2023 -- Aug. 2026</div>
+                <div class="entry-description">
+                    <strong>Coursework:</strong> Numerical Linear Algebra, Noise Filtering, System Identification, Distributed Optimization, Hybrid Systems, Sensor Fusion, Model Predictive Control, Dynamic Programming, Stochastic Systems, Tensor Networks, Reinforcement Learning, Deep Learning.
+                    <br><br>
+                    <strong>Thesis:</strong> Building a Reinforcement Learning algorithm to test cyber vulnerabilities of power distribution systems and the learnability of Event-Triggered Control based dynamic lightweight encryption.
+                    <br>
+                    <em>Reference: <a href="https://mmazojr.3me.tudelft.nl/">Dr Manuel Mazo Jr.</a></em>
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="education-entry">
+                <div class="entry-title">BSc Aerospace Engineering</div>
+                <div class="entry-subtitle">Faculty of Aerospace Engineering, TU Delft</div>
+                <div class="entry-date">Sep. 2019 -- Jun. 2023</div>
+                <div class="entry-description">
+                    Multidisciplinary Systems engineering with basic understanding in mechanical, electrical engineering, aerodynamics, flight dynamics, fundamental engineering tools such as Python, Github, modeling, braking down complex problems. Minor in AI with project on Convolutional Neural Networks: <a href="https://github.com/POTN1K/CompressionFlowAE">git</a>.
+                </div>
+            </div>
+        </section>
+
+        <!-- Work Experience Section -->
+        <h2 class="section-title">Work Experience</h2>
+        <section class="section">
+            <div class="entry">
+                <div class="entry-title">Teaching Assistant</div>
+                <div class="entry-subtitle">Aerospace System Design, Faculty of Aerospace Engineering, TU Delft</div>
+                <div class="entry-date">Sep 2023 -- Jan 2026</div>
+                <div class="entry-description">
+                    Each year I taught two groups of ten students on braking down problems, working consistently, reporting, and coding.
+                </div>
+                <div class="entry-date" style="margin-top: 8px;">Reference: <a href="https://www.tudelft.nl/staff/s.j.watson/">Prof. Dr. SJ (Simon) Watson</a></div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="entry">
+                <div class="entry-title">Website Developer</div>
+                <div class="entry-subtitle"><a href="https://www.aanmelder.nl/172417">CURE Project</a>, Geoscience & Engineering, TU Delft</div>
+                <div class="entry-date">Feb 2022 -- Mar 2023</div>
+                <div class="entry-description">
+                    Built the data structure (SQL + Python) and from scratch the visual web-interface, both back- and frontend (Nginx & Gunicorn, Django & Dash), on a Linux server for data collected by 5 companies and used in research by 3 universities.
+                </div>
+                <div class="entry-date" style="margin-top: 8px;">Reference: <a href="https://www.tudelft.nl/en/staff/t.j.heimovaara/">Prof.dr.ir. TJ (Timo) Heimovaara</a></div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="entry">
+                <div class="entry-title">Systems Engineer</div>
+                <div class="entry-subtitle"><a href="https://www.teamtumbleweed.eu/mars/">Team Tumbleweed</a>, Aerospace Innovation Hub, Delft</div>
+                <div class="entry-date">Apr 2021 -- Aug 2022</div>
+                <div class="entry-description">
+                    Worked on conceptual design, feasibility, and requirements of a Mars rover, our work was positively reviewed by ESA.
+                </div>
+                <div class="entry-date" style="margin-top: 8px;">Reference: <a href="https://www.linkedin.com/in/lucascohen-ae/">Lucas Cohen</a></div>
+            </div>
+        </section>
+
+        <!-- Additional Work Experience Section -->
+        <h2 class="section-title">Additional Work Experience</h2>
+        <section class="section">
+            <div class="entry">
+                <div class="entry-title">Annotation Engineer</div>
+                <div class="entry-subtitle"><a href="https://www.mapiq.com/">Mapiq</a></div>
+                <div class="entry-date">Feb 2023 -- Aug 2023</div>
+                <div class="entry-description">
+                    Manual and automated annotation of floor plans with office space labels.
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="entry">
+                <div class="entry-title">Device Technician</div>
+                <div class="entry-subtitle"><a href="https://flexous.com/">Flexous</a>, <a href="https://yesdelft.com/">YES!Delft</a>, Delft, Netherlands</div>
+                <div class="entry-date">Sep 2021 -- Dec 2021</div>
+                <div class="entry-description">
+                    Measurement of 5000 oscillators, laser cutting and 3D printing, management and teaching of other students working as technicians, writing of the Technician's Manual.
+                </div>
+            </div>
+        </section>
+        <section class="section">
+            <div class="entry">
+                <div class="entry-title">Maths and Physics Tutor</div>
+                <div class="entry-subtitle">Self-employed, online environment</div>
+                <div class="entry-date">Sep 2020 -- Jun 2021</div>
+                <div class="entry-description">
+                    For International Baccalaureate A-level exams in Physics and Maths.
+                </div>
+            </div>
+        </section>
+
+        <!-- Extracurricular Activities Section -->
+        <h2 class="section-title">Extracurricular Activities</h2>
+        <section class="section">
+            <div class="entry">
+                <div class="entry-title">Coach and Head Organizer</div>
+                <div class="entry-subtitle"><a href="https://www.shotbeach.nl/">D.S.B.V. Shot</a>, Beach Volleyball Club</div>
+                <div class="entry-date">Since 2021</div>
+                <div class="entry-description">
+                    Coach and head organizer of trainings for 144 trainees and 18 coaches in 2024--2025.
+                </div>
             </div>
         </section>
     </div>

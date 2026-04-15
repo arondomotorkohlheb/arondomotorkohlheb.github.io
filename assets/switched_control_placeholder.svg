@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Switched control icon</title>
+  <desc id="desc">A dense graph with six nodes arranged on a hexagon and most nodes interconnected.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff7ed" />
+      <stop offset="100%" stop-color="#f3efe6" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)" />
+  <g stroke="#9b7b57" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.95">
+    <line x1="256" y1="112" x2="372" y2="176" />
+    <line x1="372" y1="176" x2="372" y2="304" />
+    <line x1="372" y1="304" x2="256" y2="368" />
+    <line x1="256" y1="368" x2="140" y2="304" />
+    <line x1="140" y1="304" x2="140" y2="176" />
+    <line x1="140" y1="176" x2="256" y2="112" />
+    <line x1="256" y1="112" x2="372" y2="304" />
+    <line x1="372" y1="176" x2="140" y2="304" />
+    <line x1="372" y1="304" x2="140" y2="176" />
+    <line x1="256" y1="368" x2="372" y2="176" />
+    <line x1="256" y1="112" x2="140" y2="304" />
+    <line x1="256" y1="368" x2="140" y2="176" />
+  </g>
+  <g fill="#c46f2f">
+    <circle cx="256" cy="112" r="18" />
+    <circle cx="372" cy="176" r="18" />
+    <circle cx="372" cy="304" r="18" />
+    <circle cx="256" cy="368" r="18" />
+    <circle cx="140" cy="304" r="18" />
+    <circle cx="140" cy="176" r="18" />
+  </g>
+  <g stroke="#2c3e50" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="256" cy="112" r="18" />
+    <circle cx="372" cy="176" r="18" />
+    <circle cx="372" cy="304" r="18" />
+    <circle cx="256" cy="368" r="18" />
+    <circle cx="140" cy="304" r="18" />
+    <circle cx="140" cy="176" r="18" />
+  </g>
+</svg>

@@ -1,39 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" role="img" aria-labelledby="title desc">
-  <title id="title">Distributed control placeholder</title>
-  <desc id="desc">Stylized network graph with coupled nodes and control arrows.</desc>
+  <title id="title">Distributed control icon</title>
+  <desc id="desc">Four nodes connected as a single chain with uneven spacing.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#f8fbff" />
       <stop offset="100%" stop-color="#e8f0fb" />
     </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#2c3e50" />
-      <stop offset="100%" stop-color="#2f6fb1" />
-    </linearGradient>
   </defs>
   <rect x="0" y="0" width="400" height="400" fill="url(#bg)" />
 
-  <g stroke="#9bb3cc" stroke-width="3" fill="none" opacity="0.9">
-    <path d="M85 125 L200 80 L315 125 L315 255 L200 320 L85 255 Z"/>
-    <path d="M85 125 L200 200 L315 125"/>
-    <path d="M85 255 L200 200 L315 255"/>
-    <path d="M200 80 L200 200 L200 320"/>
+  <g stroke="#9bb3cc" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M78 292 L144 208 L236 144 L330 110" />
   </g>
 
-  <g fill="url(#accent)">
-    <circle cx="85" cy="125" r="16"/>
-    <circle cx="200" cy="80" r="16"/>
-    <circle cx="315" cy="125" r="16"/>
-    <circle cx="85" cy="255" r="16"/>
-    <circle cx="200" cy="200" r="16"/>
-    <circle cx="315" cy="255" r="16"/>
-    <circle cx="200" cy="320" r="16"/>
+  <g fill="#2f6fb1">
+    <circle cx="78" cy="292" r="18"/>
+    <circle cx="144" cy="208" r="18"/>
+    <circle cx="236" cy="144" r="18"/>
+    <circle cx="330" cy="110" r="18"/>
   </g>
 
-  <g stroke="#d35400" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M120 100 C160 60, 240 60, 280 100" />
-    <path d="M270 92 L280 100 L272 109" />
-    <path d="M280 280 C240 320, 160 320, 120 280" />
-    <path d="M128 271 L120 280 L130 287" />
+  <g stroke="#2c3e50" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M92 278 L128 232" />
+    <path d="M160 195 L220 155" />
+    <path d="M252 138 L314 116" />
   </g>
 </svg>
