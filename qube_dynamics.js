@@ -16,6 +16,7 @@ class Qube {
             zeta_alpha: 0.301178062,
             v2tau: 440.092256,
             gravity: 9.81 / (2 * 0.129),
+            alphaNoiseSigma: 0.015,
         }, parameters);
 
         this.dt = 0.01;
@@ -113,8 +114,8 @@ class Qube {
         const u = this.controlled ? this.controlInput() : 0;
         const [acc_theta, acc_alpha] = this.computeAcceleration(u);
 
-        // Add small white noise disturbance to alpha
-        const alphaNoise = this.generateWhiteNoise(0.005);
+        // Always-on zero-mean process noise; increase/decrease covariance via alphaNoiseSigma.
+        const alphaNoise = this.generateWhiteNoise(this.params.alphaNoiseSigma);
 
         this.x[0] += acc_theta * this.dt;
         this.x[1] += (acc_alpha + alphaNoise) * this.dt;

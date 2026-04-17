@@ -284,6 +284,17 @@ body {
     margin: 6px 0 4px;
 }
 
+.plot-math-description {
+    color: #425466;
+    font-size: 0.95em;
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.plot-math-description .katex-display {
+    margin: 0.25em 0 0.55em;
+}
+
 .local-controller-section {
     margin-top: 18px;
 }
@@ -434,11 +445,14 @@ body {
             </div>
         </div>
         <div id="powerPlotTitle" class="plot-math-title"></div>
+        <div id="powerPlotDescription" class="plot-math-description"></div>
         <canvas id="farmPlotPower" class="farm-plot"></canvas>
-        <div id="betaPlotTitle" class="plot-math-title"></div>
-        <canvas id="farmPlotBeta" class="farm-plot"></canvas>
         <div id="omegaPlotTitle" class="plot-math-title"></div>
+        <div id="omegaPlotDescription" class="plot-math-description"></div>
         <canvas id="farmPlotOmega" class="farm-plot"></canvas>
+        <div id="betaPlotTitle" class="plot-math-title"></div>
+        <div id="betaPlotDescription" class="plot-math-description"></div>
+        <canvas id="farmPlotBeta" class="farm-plot"></canvas>
 
     </section>
 
@@ -471,6 +485,9 @@ const windDialValue = document.getElementById('windDialValue');
 const betaPlotTitle = document.getElementById('betaPlotTitle');
 const omegaPlotTitle = document.getElementById('omegaPlotTitle');
 const powerPlotTitle = document.getElementById('powerPlotTitle');
+const betaPlotDescription = document.getElementById('betaPlotDescription');
+const omegaPlotDescription = document.getElementById('omegaPlotDescription');
+const powerPlotDescription = document.getElementById('powerPlotDescription');
 const windDirectionDial = document.getElementById('windDirectionDial');
 const farmPlotLayout = document.getElementById('farmPlotLayout');
 const farmPlotBeta = document.getElementById('farmPlotBeta');
@@ -659,9 +676,26 @@ function ensureMathTitlesRendered() {
     }
 
     renderMathLabel(windDialValue, '\\gamma_{wind} = 180.0^{\\circ}');
-    renderMathLabel(betaPlotTitle, 'pitch: \\beta \\text{ vs } \\beta_{ref}');
-    renderMathLabel(omegaPlotTitle, 'rotor angular velocity: \\omega \\text{ vs } \\omega_{ref}');
-    renderMathLabel(powerPlotTitle, 'power: P_{1:N},\\ \\color{#17becf}{P_{\\Sigma}/N}');
+    renderMathLabel(betaPlotTitle, '\\beta \\text{ vs } \\beta_{ref}');
+    renderMathLabel(omegaPlotTitle, '\\omega \\text{ vs } \\omega_{ref}');
+    renderMathLabel(powerPlotTitle, 'P_{1:N},\\ \\color{#17becf}{P_{\\Sigma}/N}');
+    renderMathDescription(powerPlotDescription,
+        'The goal of the farm is to track net power output, shown as the average by '
+        + '<span class="math-inline" data-math="P_{\\Sigma}/N"></span>, and its components, the power of each turbine '
+        + '<span class="math-inline" data-math="P_{1:N}"></span>. '
+        + 'For all plots, the reference is displayed as a dashed line and the actual value is displayed as a solid line. '
+        + 'The color of each turbine is indicated by the layout graph. '
+        + 'The reference power is determined centrally by the supervisory controller.'
+    );
+    renderMathDescription(omegaPlotDescription,
+        'The second graph shows the tracking of the angular velocity of all turbines. '
+        + 'Determining the reference value and tracking it are both done locally at each turbine, '
+        + 'at a higher frequency than the communication with the supervisory controller.'
+    );
+    renderMathDescription(betaPlotDescription,
+        'The third graph is the pair of the second, where the reference tracking of the pitch angle '
+        + '<span class="math-inline" data-math="\\beta"></span> is shown.'
+    );
     return true;
 }
 
@@ -677,6 +711,24 @@ function renderMathLabel(container, tex) {
         });
     } else {
         container.textContent = tex;
+    }
+}
+
+function renderMathDescription(container, html) {
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = html;
+
+    if (window.katex) {
+        const inlineMathNodes = container.querySelectorAll('[data-math]');
+        inlineMathNodes.forEach((node) => {
+            katex.render(node.getAttribute('data-math') || '', node, {
+                throwOnError: false,
+                displayMode: false
+            });
+        });
     }
 }
 

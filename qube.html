@@ -872,6 +872,8 @@ const trackingButton = document.getElementById("trackingButton");
 const trackingTitle = document.getElementById("trackingTitle");
 let disturbanceTimer = null;
 const DISTURBANCE_PERIOD_MS = 100;
+const DISTURBANCE_NOISE_MEAN = 0;
+const DISTURBANCE_NOISE_STD = 1.8;
 const phaseHistory = [];
 const MAX_PHASE_POINTS = 180;
 
@@ -881,7 +883,7 @@ katex.render("\\theta", phaseThetaDiv);
 katex.render("\\alpha", phaseAlphaDiv);
 
 function gaussianRandom(mean = 0, sigma = 1) {
-    const u1 = Math.max(Math.random(), 1e-12);
+    const u1 = Math.max(Math.random(),1e-12);
     const u2 = Math.random();
     const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
     return mean + sigma * z0;
@@ -893,8 +895,8 @@ function injectDisturbance() {
         return;
     }
     
-    qube.x[1] += gaussianRandom(0, 1);
-    qube.x[0] += gaussianRandom(0, 1);
+    qube.x[1] += gaussianRandom(DISTURBANCE_NOISE_MEAN, DISTURBANCE_NOISE_STD);
+    qube.x[0] += gaussianRandom(DISTURBANCE_NOISE_MEAN, DISTURBANCE_NOISE_STD);
 }
 
 function startContinuousDisturbance() {
