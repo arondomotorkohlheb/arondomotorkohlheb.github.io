@@ -48,10 +48,24 @@ body {
 
 .top-nav {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.nav-home-row,
+.nav-projects-row {
+    display: flex;
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 8px;
+}
+
+.nav-projects-title {
+    font-size: 1.15em;
+    font-style: italic;
+    color: #2c3e50;
 }
 
 .top-nav a {
@@ -129,6 +143,14 @@ body {
 .project-description a:hover {
     color: #0052a3;
     text-decoration: underline;
+}
+
+.algorithm-title {
+    color: #2c3e50;
+    font-size: 1.2em;
+    text-align: center;
+    margin: 14px 0 6px;
+    font-style: italic;
 }
 
 .constraint-equation {
@@ -295,7 +317,21 @@ body {
 .node-state-track {
     position: relative;
     flex: 1;
-    height: 3px;
+    height: 28px;
+    background: transparent;
+    border-radius: 8px;
+    cursor: ew-resize;
+    touch-action: none;
+}
+
+.node-state-track::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    height: 4px;
+    transform: translateY(-50%);
     background: #d7e0e8;
     border-radius: 99px;
 }
@@ -303,8 +339,8 @@ body {
 .node-state-dot {
     position: absolute;
     top: 50%;
-    width: 5px;
-    height: 18px;
+    width: 14px;
+    height: 26px;
     border-radius: 2px;
     transform: translate(-50%, -50%);
     border: 1px solid #fff;
@@ -417,11 +453,16 @@ body {
     <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
     <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
     <nav class="top-nav" aria-label="Primary">
-        <a href="index.html">Home</a>
-        <a href="qube.html">Inverted Pendulum</a>
-        <a href="testbed.html">Layered Control</a>
-        <a class="active" href="distributed_control.html">Distributed Control</a>
-        <a href="switched_control.html">Switched Control</a>
+        <div class="nav-home-row">
+            <a href="index.html">Home</a>
+        </div>
+        <div class="nav-projects-title">Projects:</div>
+        <div class="nav-projects-row">
+            <a href="qube.html">Model Predictive Control</a>
+            <a href="testbed.html">Layered Control</a>
+            <a class="active" href="distributed_control.html">Distributed Control</a>
+            <a href="switched_control.html">Switched Control</a>
+        </div>
     </nav>
 </header>
 
@@ -435,8 +476,9 @@ body {
         Real time simulation of a plant with multiple independent LTIs and distributed control to solve the coupling constraint under input limitations.
     </p>
     <p class="project-description">
-       Git: <a href="https://github.com/arondomotorkohlheb/Distributed-and-Networked-Control" target="_blank" rel="noopener noreferrer">Repository</a>
+       github: <a href="https://github.com/arondomotorkohlheb/Distributed-and-Networked-Control" target="_blank" rel="noopener noreferrer">Repository</a>
     </p>
+    <h3 class="algorithm-title">Choose the Distributed Solver:</h3>
     <div class="solver-controls">
         <button id="solverADMM" class="solver-button" type="button">Alternating Direction Method of Multipliers</button>
         <button id="solverSubgradient" class="solver-button" type="button">Subgradient Method</button>
@@ -1535,7 +1577,6 @@ function buildNodeGridUI() {
 
             const track = document.createElement('div');
             track.className = 'node-state-track';
-            track.style.background = `linear-gradient(90deg, rgba(44,62,80,0.15), rgba(44,62,80,0.08))`;
 
             const dot = document.createElement('div');
             dot.className = 'node-state-dot';

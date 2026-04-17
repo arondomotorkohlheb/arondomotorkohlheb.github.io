@@ -31,10 +31,24 @@
 
         .top-nav {
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            margin: 12px 0 16px;
+        }
+
+        .nav-home-row,
+        .nav-projects-row {
+            display: flex;
             justify-content: center;
             gap: 10px;
-            margin: 12px 0 16px;
             flex-wrap: wrap;
+        }
+
+        .nav-projects-title {
+            font-size: 1.15em;
+            font-style: italic;
+            color: #2c3e50;
         }
 
         .top-nav a {
@@ -294,11 +308,16 @@
             <h1 class="main-title">Portfolio</h1>
             <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
             <nav class="top-nav" aria-label="Primary">
-                <a class="active" href="index.html">Home</a>
-                <a href="qube.html">Inverted Pendulum</a>
-                <a href="testbed.html">Layered Control</a>
-                <a href="distributed_control.html">Distributed Control</a>
-                <a href="switched_control.html">Switched Control</a>
+                <div class="nav-home-row">
+                    <a class="active" href="index.html">Home</a>
+                </div>
+                <div class="nav-projects-title">Projects:</div>
+                <div class="nav-projects-row">
+                    <a href="qube.html">Model Predictive Control</a>
+                    <a href="testbed.html">Layered Control</a>
+                    <a href="distributed_control.html">Distributed Control</a>
+                    <a href="switched_control.html">Switched Control</a>
+                </div>
             </nav>
         </div>
 
@@ -321,8 +340,8 @@
                 <a class="project-card" href="qube.html">
                     <img src="assets\qube_sketch.png" alt="Qube project sketch" class="project-thumb">
                     <div class="project-content">
-                        <div class="project-title">Inverted Pendulum</div>
-                        <p class="project-description">Inverted pendulum modeling, system identification, linear quadratic regulator, and model predictive control, guarantees and implementation.</p>
+                        <div class="project-title">Model Predictive Control</div>
+                        <p class="project-description">Model predictive control modeling, system identification, linear quadratic regulator, and implementation guarantees.</p>
                     </div>
                 </a>
                 <a class="project-card" href="testbed.html">

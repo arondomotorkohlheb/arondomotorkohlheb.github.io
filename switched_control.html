@@ -47,10 +47,24 @@ body {
 
 .top-nav {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.nav-home-row,
+.nav-projects-row {
+    display: flex;
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 8px;
+}
+
+.nav-projects-title {
+    font-size: 1.15em;
+    font-style: italic;
+    color: #2c3e50;
 }
 
 .top-nav a {
@@ -356,11 +370,16 @@ body {
     <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
     <p class="site-subtitle">Aron Domotor Kohlheb</p>
     <nav class="top-nav" aria-label="Primary">
-        <a href="index.html">Home</a>
-        <a href="qube.html">Inverted Pendulum</a>
-        <a href="testbed.html">Layered Control</a>
-        <a href="distributed_control.html">Distributed Control</a>
-        <a class="active" href="switched_control.html">Switched Control</a>
+        <div class="nav-home-row">
+            <a href="index.html">Home</a>
+        </div>
+        <div class="nav-projects-title">Projects:</div>
+        <div class="nav-projects-row">
+            <a href="qube.html">Model Predictive Control</a>
+            <a href="testbed.html">Layered Control</a>
+            <a href="distributed_control.html">Distributed Control</a>
+            <a class="active" href="switched_control.html">Switched Control</a>
+        </div>
     </nav>
 </header>
 
@@ -370,7 +389,7 @@ body {
     Both heating and the hydraulics are controlled by switched control, therefore the system inhibits switched system dynamics, 
     and the dynamics and controller is described with an automaton. 
 </p>
-<p class="project-description">Git: <a href="https://github.com/arondomotorkohlheb/Switched-Control" target="_blank" rel="noopener noreferrer">Repository</a>.</p>
+<p class="project-description">github: <a href="https://github.com/arondomotorkohlheb/Switched-Control" target="_blank" rel="noopener noreferrer">Repository</a>.</p>
 
 <section class="content-section">
     <h2 class="section-title">Real Time Dynamics with Interactive External Temperature</h2>
@@ -431,7 +450,7 @@ const constants = {
     rho: 1000,
     g: 9.81,
     l: 1.4,
-    omega0: 0.0002,
+    omega0: 0.00002,
     omega1: 1,
     At: 0.01,
     Ac: 0.01,

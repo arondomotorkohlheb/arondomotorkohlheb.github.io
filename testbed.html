@@ -57,10 +57,24 @@ body {
 
 .top-nav {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.nav-home-row,
+.nav-projects-row {
+    display: flex;
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 8px;
+}
+
+.nav-projects-title {
+    font-size: 1.15em;
+    font-style: italic;
+    color: #2c3e50;
 }
 
 .top-nav a {
@@ -385,24 +399,29 @@ body {
         <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
         <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
         <nav class="top-nav" aria-label="Primary">
-            <a href="index.html">Home</a>
-            <a href="qube.html">Inverted Pendulum</a>
-            <a class="active" href="testbed.html">Layered Control</a>
-            <a href="distributed_control.html">Distributed Control</a>
-            <a href="switched_control.html">Switched Control</a>
+            <div class="nav-home-row">
+                <a href="index.html">Home</a>
+            </div>
+            <div class="nav-projects-title">Projects:</div>
+            <div class="nav-projects-row">
+                <a href="qube.html">Model Predictive Control</a>
+                <a class="active" href="testbed.html">Layered Control</a>
+                <a href="distributed_control.html">Distributed Control</a>
+                <a href="switched_control.html">Switched Control</a>
+            </div>
         </nav>
     </header>
 
     <h1 class="headline">Layered Control Design and Hardware-in-the-Loop Testbed Construction</h1>
     <p class="subtitle">Real-time hardware-in-the-loop simulation of wind farms to enable testing of cyber attack detection mechanism. Due to the coupling of the turbine dynamics via the wake interactions and a need for high-frequency turbine-level control a hierarchical controller is implemented. To raise the accuracy of the testbed the communication is incorporated as the hardware in the loop.</p>
-    <p class="project-description">Git: <a href="https://github.com/arondomotorkohlheb/off_testbed" target="_blank" rel="noopener noreferrer">Repository</a>.</p>
+    <p class="project-description">github: <a href="https://github.com/arondomotorkohlheb/off_testbed" target="_blank" rel="noopener noreferrer">Repository</a>.</p>
 
     <section class="content-section">
         <h2 class="section-title">Hardware-in-the-loop Architecture</h2>
         <div id="texContent" class="tex-content">Loading content from testbed.tex...</div>
     </section>
 
-    <section class="content-section" style="margin-top: 18px;">
+    <section id="farmVisualizationSection" class="content-section" style="margin-top: 18px;">
         <h2 class="section-title">Layered Control Performance</h2>
         <div id="farmPlaybackTime" class="farm-viz-status">$t = 0.0\ \mathrm{s}$</div>
         <div class="farm-top-panel">
@@ -495,6 +514,7 @@ let localControllerRenderToken = 0;
 let supervisoryControllerPdfDoc = null;
 let supervisoryControllerRenderToken = 0;
 let pdfjsLibModule = null;
+let farmVisualizationStarted = false;
 
 function renderMathBlock(container, tex) {
     const wrapper = document.createElement('div');
@@ -1210,6 +1230,45 @@ function initFarmVisualization() {
     });
 }
 
+function startFarmVisualizationIfNeeded() {
+    if (farmVisualizationStarted) {
+        return;
+    }
+
+    farmVisualizationStarted = true;
+    initFarmVisualization();
+}
+
+function observeFarmVisualization() {
+    const farmSection = document.getElementById('farmVisualizationSection');
+    if (!farmSection) {
+        return;
+    }
+
+    if (!('IntersectionObserver' in window)) {
+        startFarmVisualizationIfNeeded();
+        return;
+    }
+
+    const observer = new IntersectionObserver((entries, obs) => {
+        for (const entry of entries) {
+            if (!entry.isIntersecting) {
+                continue;
+            }
+
+            startFarmVisualizationIfNeeded();
+            obs.disconnect();
+            break;
+        }
+    }, {
+        root: null,
+        rootMargin: '120px 0px',
+        threshold: 0.25
+    });
+
+    observer.observe(farmSection);
+}
+
 window.addEventListener('resize', () => {
     if (!latestFarmModel) {
         return;
@@ -1794,9 +1853,9 @@ window.addEventListener('resize', () => {
 });
 
 loadArchitectureDiagram();
-initFarmVisualization();
 initLocalControllerPdf();
 initSupervisoryControllerPdf();
+observeFarmVisualization();
 </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Qube Control</title>
+<title>Model Predictive Control</title>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -54,10 +54,24 @@ body {
 
 .top-nav {
     display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    margin-bottom: 8px;
+}
+
+.nav-home-row,
+.nav-projects-row {
+    display:flex;
     justify-content:center;
     gap:10px;
     flex-wrap:wrap;
-    margin-bottom: 8px;
+}
+
+.nav-projects-title {
+    font-size: 1.15em;
+    font-style: italic;
+    color:#2c3e50;
 }
 
 .top-nav a {
@@ -90,10 +104,10 @@ body {
     justify-content:center;
     align-items:flex-start;
     flex-wrap:nowrap;
-    gap:12px;
+    gap:10px;
     padding:0 16px;
     margin: 0 auto;
-    max-width: 1200px;
+    max-width: 936px;
     box-sizing:border-box;
 }
 .panel {
@@ -103,7 +117,7 @@ body {
     overflow:hidden;
     background:transparent;
     aspect-ratio:1 / 1;
-    width:clamp(280px, 46vw, 620px);
+    width:clamp(216px, 35.1vw, 441px);
     flex:0 0 auto;
 }
 #renderPanel canvas {
@@ -145,7 +159,7 @@ body {
     justify-content:center;
     gap:14px;
     align-items:center;
-    max-width: 1200px;
+    max-width: 1040px;
     padding: 0 16px;
     box-sizing: border-box;
 }
@@ -188,6 +202,7 @@ body {
     margin:0 auto 14px auto;
     font-size:18px;
     max-width: 1200px;
+    text-align: center;
     padding: 0 16px;
     box-sizing: border-box;
 }
@@ -199,6 +214,10 @@ body {
     max-width: 1200px;
     padding: 0 16px;
     box-sizing: border-box;
+}
+
+.repo-link {
+    text-align: center;
 }
 
 .project-description a {
@@ -335,47 +354,28 @@ body {
     <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
     <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
     <nav class="top-nav" aria-label="Primary">
-        <a href="index.html">Home</a>
-        <a class="active" href="qube.html">Inverted Pendulum</a>
-        <a href="testbed.html">Layered Control</a>
-        <a href="distributed_control.html">Distributed Control</a>
-        <a href="switched_control.html">Switched Control</a>
+        <div class="nav-home-row">
+            <a href="index.html">Home</a>
+        </div>
+        <div class="nav-projects-title">Projects:</div>
+        <div class="nav-projects-row">
+            <a class="active" href="qube.html">Model Predictive Control</a>
+            <a href="testbed.html">Layered Control</a>
+            <a href="distributed_control.html">Distributed Control</a>
+            <a href="switched_control.html">Switched Control</a>
+        </div>
     </nav>
 </header>
 
-<h1 class="headline">Inverted Pendulum Identification and Control</h1>
-<p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo inverted pendulum setup.</p>
-<p class="project-description">Git: <a href="https://github.com/arondomotorkohlheb/MPC-inverse-pendulum" target="_blank" rel="noopener noreferrer">Repository</a>.</p>
+<h1 class="headline">Model Predictive Control</h1>
+<p class="intro-text">Modelling, System Identification, Linear Quadratic Regulator and Model Predictive Control of the Qube servo setup.</p>
+     <p class="project-description repo-link">
+       github: <a href="https://github.com/arondomotorkohlheb/MPC-inverse-pendulum" target="_blank" rel="noopener noreferrer">Repository</a>
+    </p>
 <p class="intro-text">Credit: Áron D. Kohlhéb, Kosma Krzyżanowski</p>
 
-<div class="app-layout">
-    <div id="renderPanel" class="panel">
-        <div id="thetaLabel" class="label"></div>
-        <div id="alphaLabel" class="label"></div>
-    </div>
-    <div id="phasePanel" class="panel">
-        <canvas id="phaseCanvas"></canvas>
-        <div id="phaseThetaLabel" class="phase-axis-label theta"></div>
-        <div id="phaseAlphaLabel" class="phase-axis-label alpha"></div>
-    </div>
-</div>
-<div class="mode-panel">
-    <button id="offControlButton" type="button">
-        <span id="offControlTitle" class="btn-title">Turn Control Off</span>
-        <span id="offControlSubtitle" class="btn-subtitle">Disable control</span>
-    </button>
-    <button id="disturbButton" type="button">
-        <span class="btn-title">Disturb</span>
-        <span class="btn-subtitle">Add gaussian noise to the velocity of the arms</span>
-    </button>
-    <button id="trackingButton" type="button">
-        <span id="trackingTitle" class="btn-title">Turn Reference Tracking On</span>
-        <span class="btn-subtitle">Tracking of a square wave</span>
-    </button>
-</div>
-
 <section class="content-section">
-    <h2 class="section-title">Implementation</h2>
+    <h2 class="section-title">Real Life Performance</h2>
     <div class="video-wrap">
         <iframe
             id="implementationVideo"
@@ -387,6 +387,36 @@ body {
     </div>
     <div id="videoFallback" class="video-fallback">
         Embedded playback is blocked in this context. Open the video directly using the link below.
+    </div>
+</section>
+
+<section class="content-section">
+    <h2 class="section-title">Interact with the Controlled System</h2>
+    <p class="project-description">On the left you can see the rendered model, on the right the phase plot, and at the bottom you can turn the controller on/off, change tracking, or add disturbance. To disturb the system constantly hold down the disturb button.</p>
+    <div class="app-layout">
+        <div id="renderPanel" class="panel">
+            <div id="thetaLabel" class="label"></div>
+            <div id="alphaLabel" class="label"></div>
+        </div>
+        <div id="phasePanel" class="panel">
+            <canvas id="phaseCanvas"></canvas>
+            <div id="phaseThetaLabel" class="phase-axis-label theta"></div>
+            <div id="phaseAlphaLabel" class="phase-axis-label alpha"></div>
+        </div>
+    </div>
+    <div class="mode-panel">
+        <button id="offControlButton" type="button">
+            <span id="offControlTitle" class="btn-title">Turn Control Off</span>
+            <span id="offControlSubtitle" class="btn-subtitle">Disable control</span>
+        </button>
+        <button id="disturbButton" type="button">
+            <span class="btn-title">Disturb</span>
+            <span class="btn-subtitle">Add gaussian noise to the velocity of the arms</span>
+        </button>
+        <button id="trackingButton" type="button">
+            <span id="trackingTitle" class="btn-title">Turn Reference Tracking On</span>
+            <span class="btn-subtitle">Tracking of a square wave</span>
+        </button>
     </div>
 </section>
 
@@ -1126,7 +1156,7 @@ function startSimulation() {
     qube.x = [0, 0, 0.6, 0.35];
     qube.xref = [0, 0, 0, 0];
     qube.controlled = true;
-    qube.tracking = null;
+    qube.tracking = 'square';
     updateModeButtons();
 
     animate();
