@@ -121,6 +121,16 @@ body {
     text-align: center;
 }
 
+.project-description a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+.project-description a:hover {
+    color: #0052a3;
+    text-decoration: underline;
+}
+
 .constraint-equation {
     color: #2c3e50;
     text-align: center;
@@ -422,9 +432,11 @@ body {
 <section class="content-section">
     <h2 class="section-title">Distributed Control under shared terminal constrain</h2>
     <p class="project-description">
-        Real time simulation of a plant with multiple independent LTIs and distributed control to solve the coupling constraint under input limitations
+        Real time simulation of a plant with multiple independent LTIs and distributed control to solve the coupling constraint under input limitations.
     </p>
-    
+    <p class="project-description">
+       Git: <a href="https://github.com/arondomotorkohlheb/Distributed-and-Networked-Control" target="_blank" rel="noopener noreferrer">Repository</a>
+    </p>
     <div class="solver-controls">
         <button id="solverADMM" class="solver-button" type="button">Alternating Direction Method of Multipliers</button>
         <button id="solverSubgradient" class="solver-button" type="button">Subgradient Method</button>
