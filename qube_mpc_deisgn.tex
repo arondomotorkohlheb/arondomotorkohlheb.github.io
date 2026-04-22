@@ -52,7 +52,7 @@ Furthermore $\mathbb{X}$ is the state space and is defined as \autoref{state_spa
 and $\mathbb{X}_f$ is the terminal set defined in the stability discussion \autoref{sec:stability}
 
 \subsubsection*{Stability} \label{sec:stability}
-MPC incorporates a receding horizon approach, where the finite horizon trajectory is computed at each time step and the first element of the optimal control sequence is applied. The stability of the process can be proven by the stability of the finite horizon trajectory, since the receding horizon solution compounds of the finite horizon results. 
+MPC incorporates a receding horizon approach, where the finite horizon trajectory is computed at each time step and the first element of the optimal control sequence is applied. The stability of the process is proven by entering a positive invariant set  within the horizon.
 
 Stability is proven by using Lyapunov functions to bound the evolution of the state. Given the Lyapunov function meets the properties: it is strictly increasing in $x$, it is strictly decreasing in $t = kh$ they prove local stability. Since quadratic expressions are always positive if their weight matrix is by definition positive definite the property is utilized for $Q,R,P_f \succ0$. Therefore the cost function of the form \autoref{eq:cost} meets the first requirement.
 
@@ -75,7 +75,7 @@ which results in the dynamics
 \begin{equation} \label{terminal_dynamics}
     x(k+1) = \left(F-G (G^\top P_f G+ R)^{-1}G^\top P_f F\right) x(k)
 \end{equation}
-The evolution of the dynamics is bounded only if $x(k)$ is part of the terminal set defined as \autoref{xf_def}. Here the right side needs to be some constant, it doesn't hold significance as it only scales the entries of $P_f$, therefore it can be chosen to be unit it doesn't restrict the solution space. 
+The evolution of the dynamics is bounded only if $x(k)$ is part of the terminal set defined as \autoref{xf_def}. Here the right side needs to be some constant, it doesn't hold significance as it only scales the entries of $P_f$, therefore it can be chosen to be one unit, it doesn't restrict the solution space. 
 \begin{equation} \label{xf_def}
     \mathbb{X}_f:= \;\{x\} \;\forall \; x | \; x^\top P_f x \le 1
 \end{equation}

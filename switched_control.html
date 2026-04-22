@@ -291,6 +291,30 @@ body {
     gap: 8px;
 }
 
+.pdf-flat-wrap {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    overflow: hidden;
+}
+
+.pdf-page-wrap {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
+.pdf-page-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 0;
+    outline: 0;
+    background: transparent;
+}
+
 .reports-list a {
     color: #0066cc;
     text-decoration: none;
@@ -360,7 +384,7 @@ body {
 <body>
 <header class="site-header">
     <h1 class="portfolio-title"><a href="index.html">Portfolio</a></h1>
-    <p class="site-subtitle">Aron Domotor Kohlheb</p>
+    <p class="site-subtitle">Áron Dömötör Kohlhéb</p>
     <nav class="top-nav" aria-label="Primary">
         <div class="nav-home-row">
             <a href="index.html">Home</a>
@@ -377,9 +401,9 @@ body {
 
 <h1 class="headline">Switched Control</h1>
 <p class="intro-text">The heating system is modeled by the dynamics of the boiler, radiator and room temperature,
-    and changes with respect to how uch the window is open. The window is actuated by a hydraulic arm. 
+    and changes with respect to how much the window is open. The window is actuated by a hydraulic arm. 
     Both heating and the hydraulics are controlled by switched control, therefore the system inhibits switched system dynamics, 
-    and the dynamics and controller is described with an automaton. 
+    and the dynamics and controller is described by an automaton. 
 </p>
 <p class="project-description">github: <a href="https://github.com/arondomotorkohlheb/Switched-Control" target="_blank" rel="noopener noreferrer">Repository</a>.</p>
 
@@ -418,7 +442,12 @@ body {
 </section>
 
 <section class="content-section">
-    <h2 class="section-title">Report</h2>
+    <h2 class="section-title">Model</h2>
+    <div id="switchingModelPdf" class="pdf-flat-wrap"></div>
+</section>
+
+<section class="content-section">
+    <h2 class="section-title">Full Report</h2>
     <div class="reports-list">
         <a href="assets/Switching_Control.pdf" target="_blank" rel="noopener noreferrer">Switching_Control.pdf</a>
     </div>
@@ -534,6 +563,9 @@ const ambientValue = document.getElementById('ambientValue');
 const simTime = document.getElementById('simTime');
 const nodeStatus = document.getElementById('nodeStatus');
 const valveStatus = document.getElementById('valveStatus');
+const switchingModelPdf = document.getElementById('switchingModelPdf');
+
+const SWITCHING_MODEL_PDF_FILE = 'assets/switching.pdf';
 
 const ctx = temperatureCanvas.getContext('2d');
 const controllerCtx = controllerGraphCanvas.getContext('2d');
@@ -567,6 +599,10 @@ let sim = {
 let lastFrameTs = null;
 let dragActive = false;
 let simLoopTimer = null;
+let pdfjsLibModule = null;
+let switchingModelPdfDoc = null;
+let switchingModelPdfRenderToken = 0;
+let switchingModelPdfResizeTimer = null;
 
 function clamp(v, lo, hi) {
     return Math.max(lo, Math.min(hi, v));
@@ -1104,6 +1140,86 @@ function setupAmbientDrag() {
     ambientRail.addEventListener('pointercancel', endDrag);
 }
 
+async function renderSwitchingModelPdfPage() {
+    if (!switchingModelPdf || !switchingModelPdfDoc) {
+        return;
+    }
+
+    const myToken = ++switchingModelPdfRenderToken;
+    const page = await switchingModelPdfDoc.getPage(1);
+    if (myToken !== switchingModelPdfRenderToken) {
+        return;
+    }
+
+    const baseViewport = page.getViewport({ scale: 1 });
+    const targetWidth = Math.max(320, Math.floor(switchingModelPdf.clientWidth || 320));
+    const scale = targetWidth / Math.max(1, baseViewport.width);
+    const viewport = page.getViewport({ scale });
+
+    const pageWrap = document.createElement('div');
+    pageWrap.className = 'pdf-page-wrap';
+
+    const canvas = document.createElement('canvas');
+    const renderScale = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(viewport.width * renderScale);
+    canvas.height = Math.floor(viewport.height * renderScale);
+    canvas.style.width = `${viewport.width}px`;
+    canvas.style.height = `${viewport.height}px`;
+    pageWrap.appendChild(canvas);
+
+    switchingModelPdf.innerHTML = '';
+    switchingModelPdf.appendChild(pageWrap);
+
+    const canvasContext = canvas.getContext('2d', { alpha: true });
+    await page.render({
+        canvasContext,
+        viewport,
+        transform: [renderScale, 0, 0, renderScale, 0, 0]
+    }).promise;
+}
+
+async function initSwitchingModelPdf() {
+    if (!switchingModelPdf) {
+        return;
+    }
+
+    if (!pdfjsLibModule) {
+        try {
+            pdfjsLibModule = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
+        } catch (_err) {
+            switchingModelPdf.textContent = 'PDF renderer not available.';
+            return;
+        }
+    }
+
+    pdfjsLibModule.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
+
+    try {
+        const loadingTask = pdfjsLibModule.getDocument({
+            url: SWITCHING_MODEL_PDF_FILE,
+            withCredentials: false
+        });
+        switchingModelPdfDoc = await loadingTask.promise;
+        await renderSwitchingModelPdfPage();
+    } catch (_err) {
+        switchingModelPdf.textContent = 'Could not render model PDF.';
+    }
+}
+
+window.addEventListener('resize', () => {
+    if (!switchingModelPdfDoc) {
+        return;
+    }
+    if (switchingModelPdfResizeTimer) {
+        window.clearTimeout(switchingModelPdfResizeTimer);
+    }
+    switchingModelPdfResizeTimer = window.setTimeout(() => {
+        renderSwitchingModelPdfPage().catch(() => {
+            switchingModelPdf.textContent = 'Could not render model PDF.';
+        });
+    }, 150);
+});
+
 function animationStep(ts) {
     if (lastFrameTs === null) {
         lastFrameTs = ts;
@@ -1165,6 +1281,7 @@ function initSimulation() {
     startSimulationLoop();
 }
 
+initSwitchingModelPdf();
 initSimulation();
 </script>
 </body>
